@@ -16,3 +16,4 @@ joblib==1.4.2
 torch==2.8.0
 torchvision==0.23.0
 argostranslate==1.9.6
+gunicorn==22.0.0

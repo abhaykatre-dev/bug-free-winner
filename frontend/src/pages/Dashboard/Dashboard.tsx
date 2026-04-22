@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Fish, AlertTriangle, CheckCircle2, Clock, TrendingDown,
   Activity, ArrowRight, Microscope, RefreshCw, MapPin,
-  ThumbsUp, ThumbsDown, Calendar, Pill, ShieldAlert, WifiOff,
+  ThumbsUp, ThumbsDown, Calendar, Pill, ShieldAlert, WifiOff, Zap,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../../context/AuthContext';
@@ -142,6 +142,25 @@ export const Dashboard: React.FC = () => {
   const rules = selected ? getJourneyRules(selected.primary_disease) : null;
   const cfg   = selected ? (SEV_CONFIG[selected.severity] ?? SEV_CONFIG.Safe) : null;
 
+  // Recent scans = last 6 from history
+  const recentScans = history.slice(0, 6);
+
+  // Relative time helper
+  const timeAgo = (iso: string) => {
+    const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (diff < 60)  return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+  };
+
+  // Auto-refresh every 30 s
+  const refreshRef = useRef<ReturnType<typeof setInterval>>();
+  useEffect(() => {
+    refreshRef.current = setInterval(() => setRefreshK(k => k + 1), 30_000);
+    return () => clearInterval(refreshRef.current);
+  }, []);
+
   return (
     <div className={styles.container}>
 
@@ -186,6 +205,84 @@ export const Dashboard: React.FC = () => {
         ))}
       </div>
 
+      {/* ── Recent Scans Strip ───────────────────────────────────────── */}
+      <div>
+        <div className="flex justify-between items-center" style={{ marginBottom: '0.85rem' }}>
+          <h2 className={styles.sectionTitle} style={{ margin: 0 }}>
+            <Zap size={15} style={{ display:'inline', marginRight: 5, color:'var(--brand-primary)' }}/>
+            Recent Scans
+            {!loadingH && (
+              <span style={{ fontSize: '0.65rem', fontWeight: 500, color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>
+                auto-refreshes every 30s
+              </span>
+            )}
+          </h2>
+          <button className="btn btn-outline" style={{ fontSize: '0.75rem' }} onClick={() => setRefreshK(k => k + 1)}>
+            <RefreshCw size={13}/> Refresh
+          </button>
+        </div>
+
+        {loadingH ? (
+          <div className={styles.recentSkeletonRow}>
+            {[...Array(6)].map((_, i) => <div key={i} className={styles.recentSkeleton}/>)}
+          </div>
+        ) : recentScans.length === 0 ? (
+          <div className={styles.recentEmpty}>
+            <Fish size={24} color="var(--border-color)"/>
+            <span>No scans yet — run your first scan to see results here</span>
+            <button className="btn btn-primary" style={{ fontSize: '0.78rem' }} onClick={() => navigate('/diagnose')}>
+              <Microscope size={13}/> Start Scan
+            </button>
+          </div>
+        ) : (
+          <div className={styles.recentScansRow}>
+            {recentScans.map(rec => {
+              const isHealthyRec = rec.primary_disease?.toLowerCase().includes('healthy');
+              const c = isHealthyRec ? SEV_CONFIG.Safe : (SEV_CONFIG[rec.severity] ?? SEV_CONFIG.Safe);
+              return (
+                <div
+                  key={rec.diagnosis_id}
+                  className={styles.recentCard}
+                  onClick={() => navigate(`/result/${rec.diagnosis_id}`, {
+                    state: { resultData: rec, originalImage: null }
+                  })}
+                >
+                  {/* Colour top bar */}
+                  <div className={styles.recentTopBar} style={{ background: c.color }}/>
+
+                  <div className={styles.recentBody}>
+                    <div className={styles.recentDisease}>{rec.primary_disease}</div>
+
+                    <div className={styles.recentMeta}>
+                      <span className={clsx('badge', c.badge)} style={{ fontSize: '0.6rem' }}>
+                        {isHealthyRec ? 'Safe' : rec.severity}
+                      </span>
+                      <span className={styles.recentConf}>
+                        {Math.round(rec.confidence * 100)}%
+                      </span>
+                    </div>
+
+                    <div className={styles.recentTime}>
+                      <Clock size={11}/> {timeAgo(rec.timestamp)}
+                    </div>
+
+                    {rec.pond_id && (
+                      <div className={styles.recentPond}>
+                        Pond #{rec.pond_id}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.recentCta}>
+                    View <ArrowRight size={11}/>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* ── Main 2-col Layout ───────────────────────────────────────── */}
       <div className={styles.mainGrid}>
 
@@ -207,7 +304,8 @@ export const Dashboard: React.FC = () => {
           ) : (
             <div className={styles.historyList}>
               {history.map(rec => {
-                const c = SEV_CONFIG[rec.severity] ?? SEV_CONFIG.Safe;
+                const isHealthyRec = rec.primary_disease?.toLowerCase().includes('healthy');
+                const c = isHealthyRec ? SEV_CONFIG.Safe : (SEV_CONFIG[rec.severity] ?? SEV_CONFIG.Safe);
                 const isActive = selected?.diagnosis_id === rec.diagnosis_id;
                 return (
                   <div
@@ -224,7 +322,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex gap-2 items-center">
                         <span className={clsx('badge', c.badge)} style={{ fontSize: '0.6rem' }}>
-                          {rec.severity}
+                          {isHealthyRec ? 'Safe' : rec.severity}
                         </span>
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
                           {(rec.confidence * 100).toFixed(1)}% conf

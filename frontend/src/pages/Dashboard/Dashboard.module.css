@@ -1,243 +1,173 @@
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+/* ── Container ───────────────────────────────────────────────────────────── */
+.container { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* ── Welcome Bar ─────────────────────────────────────────────────────────── */
+.welcomeBar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 1rem;
+}
+.welcomeTitle { font-size: 1.35rem; font-weight: 800; color: var(--brand-secondary); margin: 0 0 0.3rem; }
+.welcomeSub   { font-size: 0.83rem; color: var(--text-secondary); margin: 0; }
+
+/* ── Stat Cards ──────────────────────────────────────────────────────────── */
+.statsRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+.statCard {
+  display: flex; align-items: center; gap: 1rem; padding: 1.25rem;
+}
+.statIcon {
+  width: 44px; height: 44px; border-radius: 12px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.statValue { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.statLabel { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-top: 0.2rem; }
+.statSub   { font-size: 0.7rem; color: var(--text-secondary); }
+
+/* ── Main 2-col Grid ─────────────────────────────────────────────────────── */
+.mainGrid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
+
+/* ── Section Title ───────────────────────────────────────────────────────── */
+.sectionTitle { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.4rem; }
+
+/* ── History List ────────────────────────────────────────────────────────── */
+.historyCol { display: flex; flex-direction: column; }
+
+.historyList { display: flex; flex-direction: column; gap: 0.5rem; max-height: 640px; overflow-y: auto; padding-right: 0.25rem; }
+.historyList::-webkit-scrollbar { width: 4px; }
+.historyList::-webkit-scrollbar-track { background: transparent; }
+.historyList::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+.historyCard {
+  background: white; border: 1px solid var(--border-color); border-radius: 10px;
+  padding: 0.85rem 1rem; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.historyCard:hover { border-color: var(--brand-primary); box-shadow: 0 2px 8px rgba(13,148,136,0.08); }
+.historyCardActive { border-color: var(--brand-primary); background: #F0FDFA; box-shadow: 0 2px 12px rgba(13,148,136,0.12); }
+
+.hCardLeft { flex: 1; padding-left: 0.75rem; }
+.hCardArrow { flex-shrink: 0; }
+
+/* ── Journey Panel ───────────────────────────────────────────────────────── */
+.journeyCol { display: flex; flex-direction: column; }
+.journey    { display: flex; flex-direction: column; gap: 1rem; }
+
+.emptyJourney {
+  padding: 3rem 2rem; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  color: var(--text-secondary); min-height: 300px;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Journey cards */
+.journeyHeader { padding: 1.25rem; }
+.journeySection { padding: 1.1rem 1.25rem; }
+
+.sectionHead {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-secondary);
+  margin-bottom: 0.85rem;
 }
 
-.title {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: var(--brand-secondary);
-  margin-bottom: 0.25rem;
+.reasoningText { font-size: 0.82rem; color: var(--text-primary); line-height: 1.6; margin: 0; }
+
+.viewFullBtn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.75rem; font-weight: 600; color: var(--brand-primary);
+  background: #F0FDFA; border: none; border-radius: 99px;
+  padding: 0.3rem 0.75rem; cursor: pointer; transition: background 0.15s;
+}
+.viewFullBtn:hover { background: #CCFBF1; }
+
+/* DO / DON'T */
+.doGrid   { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.doCard, .dontCard { padding: 1rem 1.1rem; }
+.doHead   { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.doList   { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.doItem   { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.8rem; color: var(--text-primary); line-height: 1.45; }
+.doBullet { width: 18px; height: 18px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem; }
+
+/* Timeline */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.timelineStep { display: flex; gap: 1rem; align-items: flex-start; padding-bottom: 1rem; position: relative; }
+.timelineStep:not(:last-child)::before {
+  content: ''; position: absolute; left: 11px; top: 26px; bottom: 0;
+  width: 2px; background: var(--border-color);
+}
+.timelineDot {
+  width: 24px; height: 24px; border-radius: 50%; font-size: 0.72rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.timelineBody  { flex: 1; padding-top: 0.1rem; }
+.timelineDay   { font-size: 0.72rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.2rem; }
+.timelineAction { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.timelineDetail { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem; line-height: 1.4; }
+
+/* Medication */
+.medRow   { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.82rem; flex-wrap: wrap; gap: 0.5rem; }
+.medName  { font-weight: 600; color: var(--text-primary); }
+.medDose  { color: var(--brand-primary); font-weight: 600; font-size: 0.78rem; }
+.medFreq  { color: var(--text-secondary); font-size: 0.75rem; }
+.disclaimer { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.72rem; color: var(--text-secondary); background: #FFFBEB; border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.75rem; }
+
+/* Economic */
+.econGrid  { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.econStat  { padding: 0.85rem; border-radius: 8px; background: var(--bg-primary); }
+.econLabel { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.4rem; }
+.econValue { font-size: 1.25rem; font-weight: 800; }
+
+/* ── Outbreak ─────────────────────────────────────────────────────────────── */
+.outbreakCard { padding: 1.25rem; }
+.outbreakGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.zoneCard { background: var(--bg-primary); border-radius: 10px; padding: 1rem; border: 1px solid var(--border-color); }
+
+/* ── States ──────────────────────────────────────────────────────────────── */
+.loadState { display: flex; align-items: center; gap: 0.75rem; padding: 2rem; font-size: 0.82rem; color: var(--text-secondary); justify-content: center; }
+.emptyState { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 3rem 1rem; color: var(--text-secondary); text-align: center; }
+.emptyState p { margin: 0; font-size: 0.85rem; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 20px; height: 20px; border: 2.5px solid #CCFBF1; border-top-color: var(--brand-primary); border-radius: 50%; animation: spin 0.75s linear infinite; flex-shrink: 0; }
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .mainGrid { grid-template-columns: 1fr; }
+  .historyList { max-height: 300px; }
+  .outbreakGrid { grid-template-columns: repeat(2, 1fr); }
+  .statsRow { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .statsRow { grid-template-columns: 1fr 1fr; }
+  .doGrid   { grid-template-columns: 1fr; }
+  .econGrid { grid-template-columns: 1fr; }
+  .outbreakGrid { grid-template-columns: 1fr 1fr; }
 }
 
-.subtitle {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-.topRow {
+/* ── Approved Treatment Plans ─────────────────────────────────────────────── */
+.approvedSection { }
+.approvedGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) 2fr;
-  gap: 1.5rem;
-}
-
-.metricCard {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.metricLabel {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.metricValue {
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: var(--brand-secondary);
-  margin: 1rem 0;
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-}
-
-.textWarning {
-  color: var(--danger);
-}
-
-.metricUnit {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.metricTrend {
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.trendUp { color: var(--brand-primary); }
-.trendNeutral { color: var(--brand-secondary); }
-.trendDown { color: var(--danger); }
-
-/* Queue */
-.queueCard {
-  grid-column: 4;
-  grid-row: span 2; /* Needs layout tweak if rows change, but works for flex/grid mix */
-  display: flex;
-  flex-direction: column;
-}
-
-.cardTitle {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--brand-secondary);
-  margin-bottom: 1.5rem;
-}
-
-.queueItem {
-  margin-bottom: 1.5rem;
-}
-
-.queueName {
-  font-size: 0.875rem;
-  color: var(--brand-primary);
-  font-weight: 500;
-}
-
-.queueTime {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.queueLoc {
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.progressBar {
-  flex: 1;
-  height: 6px;
-  background-color: var(--bg-primary);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  background-color: var(--text-secondary);
-  border-radius: 3px;
-}
-
-.viewAllBtn {
-  margin-top: auto;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--brand-secondary);
-  text-align: center;
-  padding: 0.5rem;
-}
-
-.viewAllBtn:hover {
-  text-decoration: underline;
-}
-
-/* Bottom Row */
-.bottomRow {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-}
-
-.chartCard {
-  background-color: #F8FAFC;
-}
-
-.activityCard {
-  display: flex;
-  flex-direction: column;
-}
-
-.activityItem {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.activityIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.bgTeal { background-color: #CCFBF1; }
-.bgBlue { background-color: #E0F2FE; }
-.bgRed { background-color: #FEE2E2; }
-
-.activityTitle {
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.activityDesc {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin-bottom: 0.25rem;
-}
-
-.activityTime {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-}
-
-/* Outbreak Prediction Widget */
-.outbreakCard { padding: 1.5rem; }
-
-.outbreakGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
+.approvedCard {
+  background: white; border: 1px solid var(--border-color);
+  border-radius: 12px; padding: 1.1rem;
+  border-left: 4px solid var(--success);
+  transition: box-shadow 0.15s;
+}
+.approvedCard:hover { box-shadow: var(--shadow-md); }
 
-.outbreakZone {
-  padding: 1rem;
-  border-radius: var(--radius-md);
-  border-left: 4px solid transparent;
+/* ── Offline Notice ───────────────────────────────────────────────────────── */
+.offlineNotice {
+  display: flex; align-items: center; gap: 0.65rem;
+  background: #FEF9C3; border: 1px solid #FDE68A; color: #92400E;
+  border-radius: 10px; padding: 0.75rem 1.1rem; font-size: 0.82rem; font-weight: 500;
 }
 
-.outbreak_critical { background-color: #FEF2F2; border-left-color: var(--danger); }
-.outbreak_warning  { background-color: #FFFBEB; border-left-color: var(--warning); }
-.outbreak_safe     { background-color: #F0FDF4; border-left-color: var(--success); }
-
-.outbreakZoneName {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-bottom: 0.6rem;
+@media (max-width: 900px) {
+  .approvedGrid { grid-template-columns: 1fr 1fr; }
 }
-
-.outbreakBar {
-  height: 8px;
-  background-color: var(--border-color);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 0.4rem;
-}
-
-.outbreakFill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.8s ease;
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .topRow { grid-template-columns: 1fr 1fr; }
-  .queueCard { grid-column: span 2; }
-  .bottomRow { grid-template-columns: 1fr; }
-  .outbreakGrid { grid-template-columns: 1fr; }
-  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+@media (max-width: 600px) {
+  .approvedGrid { grid-template-columns: 1fr; }
 }

@@ -1,120 +1,286 @@
-/* ── Layout ──────────────────────────────────────────────────────────────── */
-.container { display: flex; flex-direction: column; gap: 1.5rem; }
+/* ── Page ────────────────────────────────────────────────────────────────── */
+.page { display: flex; flex-direction: column; gap: 1.25rem; }
 
+/* Offline Preliminary Banner */
+.offlinePrelimBanner {
+  display: flex; align-items: flex-start; gap: 1rem;
+  background: linear-gradient(135deg, #92400E, #B45309);
+  border-radius: 12px; padding: 1rem 1.25rem; color: white; flex-wrap: wrap;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
 .header {
   display: flex; justify-content: space-between; align-items: center;
-  padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 1rem;
+  padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 0.75rem;
 }
 .backBtn {
-  width: 38px; height: 38px; border-radius: var(--radius-md);
-  border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
-  color: var(--text-secondary); background: white; cursor: pointer; transition: all .2s;
+  width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border-color);
+  background: white; display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
-.backBtn:hover { background: var(--bg-primary); }
-.caseId { font-size: .68rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
-.title  { font-size: 1.35rem; font-weight: 700; color: var(--brand-secondary); }
+.backBtn:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+.caseId    { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
+.caseTitle { font-size: 1.2rem; font-weight: 800; margin: 0.15rem 0 0; }
 
-.mainGrid { display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem; }
-.leftCol  { display: flex; flex-direction: column; gap: 1.25rem; }
-.rightCol { display: flex; flex-direction: column; gap: 1.25rem; }
+/* ── Emergency Banner (Critical cases) ───────────────────────────────────── */
+.emergencyBanner {
+  display: flex; align-items: flex-start; gap: 1rem;
+  background: linear-gradient(135deg, #B91C1C, #DC2626);
+  border-radius: 12px; padding: 1rem 1.25rem; color: white;
+  flex-wrap: wrap;
+}
+.emergencyTitle { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: 0.02em; }
+.emergencySteps { display: flex; flex-direction: column; gap: 0.4rem; }
+.emergencyStep  { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.8rem; opacity: 0.95; }
+.emergencyNum   {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(255,255,255,0.25); display: flex; align-items: center;
+  justify-content: center; font-size: 0.65rem; font-weight: 800; flex-shrink: 0;
+}
+.emergencyCall {
+  margin-left: auto; background: white; color: #DC2626; font-weight: 700;
+  font-size: 0.82rem; padding: 0.6rem 1.1rem; border-radius: 8px;
+  display: flex; align-items: center; gap: 0.4rem; text-decoration: none;
+  white-space: nowrap; flex-shrink: 0; align-self: flex-start;
+}
 
-/* ── Image Viewer ─────────────────────────────────────────────────────────── */
-.imageViewer {
-  position: relative; border-radius: var(--radius-lg); overflow: hidden;
-  background: #0f172a; min-height: 320px; display: flex; align-items: center;
-  justify-content: center; box-shadow: var(--shadow-lg);
+/* ── TOP ROW: Image + Confidence + Summary ────────────────────────────────── */
+.topRow {
+  display: grid;
+  grid-template-columns: 240px 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
 }
-.baseImage       { width: 100%; height: auto; display: block; }
-.heatmapOverlay  { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .65; mix-blend-mode: screen; pointer-events: none; }
-.imageOverlayBadge {
-  position: absolute; top: 1rem; left: 1rem;
-  background: rgba(255,255,255,.92); backdrop-filter: blur(6px);
-  padding: .6rem .9rem; border-radius: var(--radius-md); min-width: 180px;
+
+/* Image Card — compact, fixed height */
+.imageCard { display: flex; flex-direction: column; gap: 0.5rem; }
+.imageWrap {
+  width: 100%; height: 210px; border-radius: 12px; overflow: hidden;
+  position: relative; background: #F1F5F9; border: 1px solid var(--border-color);
 }
+.fishImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.heatmapLayer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.55; mix-blend-mode: multiply; }
+.imgBadge {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  padding: 1.25rem 0.75rem 0.65rem; color: white;
+}
+.noImage { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 0.5rem; font-size: 0.78rem; color: var(--text-secondary); }
 .heatmapLegend {
-  position: absolute; bottom: 1rem; right: 1rem;
-  display: flex; align-items: center; gap: .4rem;
-  background: rgba(0,0,0,.5); padding: .35rem .7rem; border-radius: 99px;
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.65rem; color: var(--text-secondary);
 }
-.legendBar { width: 72px; height: 7px; border-radius: 4px; background: linear-gradient(to right, #3B82F6, #22C55E, #EAB308, #EF4444); }
+.legendGrad {
+  flex: 1; height: 6px; border-radius: 3px;
+  background: linear-gradient(to right, #3B82F6, #10B981, #F59E0B, #EF4444);
+}
 
-/* ── Confidence Card ─────────────────────────────────────────────────────── */
+/* Confidence Card */
 .confidenceCard { padding: 1.25rem; }
-.metaBadge { font-size: .72rem; background: var(--bg-primary); border-radius: 99px; padding: .25rem .7rem; color: var(--text-secondary); font-weight: 500; }
-.metaTranslated { background: #CCFBF1; color: var(--brand-primary); }
+.confBig      { font-size: 2.5rem; font-weight: 900; line-height: 1; margin-bottom: 0.2rem; }
+.confSubLabel { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.85rem; }
+.metaRow      { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.85rem; }
 
-/* ── Timeline ─────────────────────────────────────────────────────────────── */
-.timelineCard { padding: 1.25rem; }
-.durationBadge { background: #A5F3FC; color: #0891B2; padding: .2rem .7rem; border-radius: 99px; font-size: .72rem; font-weight: 700; }
-.timelineStepper { position: relative; display: flex; justify-content: space-between; margin: 1.5rem 0 1.75rem; }
-.timelineLine    { position: absolute; top: 17px; left: 20px; right: 20px; height: 2px; background: var(--border-color); }
-.step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; width: 80px; }
-.stepIcon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: .5rem; }
-.activeStep  { background: var(--brand-primary); color: white; border: 3px solid #CCFBF1; }
-.pendingStep { border: 2px solid var(--border-color); color: var(--text-secondary); background: white; }
-.stepLabel { font-size: .7rem; font-weight: 700; color: var(--text-primary); margin-bottom: .1rem; text-align: center; }
-.stepTitle { font-size: .68rem; color: var(--text-secondary); text-align: center; }
-.infoAlert { background: #F0FDFA; border: 1px solid #CCFBF1; border-radius: var(--radius-md); padding: .9rem; display: flex; gap: .7rem; align-items: flex-start; }
-.infoAlert p { font-size: .8rem; color: var(--brand-primary); line-height: 1.5; margin: 0; }
-
-/* ── Economic ─────────────────────────────────────────────────────────────── */
-.economicCard { padding: 1.25rem; }
-.ecoInputGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
-.ecoInputGroup { display: flex; flex-direction: column; gap: .35rem; }
-.ecoInputGroup label { font-size: .78rem; font-weight: 600; color: var(--text-primary); }
-.ecoInput { padding: .55rem .75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: .9rem; outline: none; background: #F8FAFC; }
-.ecoInput:focus { border-color: var(--brand-primary); }
-.ecoResultGrid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; }
-.ecoStat { padding: .9rem; border-radius: var(--radius-md); }
-.ecoLoss      { background: #FEF2F2; border-left: 3px solid var(--danger); }
-.ecoTreatment { background: #FFFBEB; border-left: 3px solid var(--warning); }
-.ecoSavings   { background: #F0FDF4; border-left: 3px solid var(--success); }
-.ecoStatLabel { font-size: .65rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: .35rem; letter-spacing: .04em; }
-.ecoStatValue { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
-.ecoStatNote  { font-size: .68rem; color: var(--text-secondary); margin-top: .2rem; }
-
-/* ── Summary ──────────────────────────────────────────────────────────────── */
+/* Summary Card */
 .summaryCard { padding: 1.25rem; }
-.severitySection { margin-bottom: 1.1rem; }
-.severityBar { height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
-.severityFill { height: 100%; border-radius: 3px; transition: width .5s; }
-.obsBox { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: .85rem; margin-bottom: .75rem; }
-.obsLabel { font-size: .65rem; font-weight: 700; color: var(--brand-primary); letter-spacing: .05em; margin-bottom: .35rem; text-transform: uppercase; }
-.obsText  { font-size: .8rem; color: var(--text-primary); line-height: 1.55; margin: 0; }
-
-/* ── Meds ─────────────────────────────────────────────────────────────────── */
-.medsCard { padding: 1.25rem; }
-.medBox { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: .85rem; display: flex; gap: .85rem; align-items: center; margin-bottom: 1rem; background: #F8FAFC; }
-.medIconBox { width: 40px; height: 40px; background: #CCFBF1; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
-.medRow { display: flex; justify-content: space-between; padding: .65rem 0; border-bottom: 1px solid var(--border-color); font-size: .82rem; color: var(--text-secondary); }
-.medValue { font-weight: 600; color: var(--brand-primary); }
-.orderBtn { width: 100%; margin-top: 1rem; background: #F0FDFA; color: var(--brand-primary); font-weight: 600; }
-.orderBtn:hover { background: #CCFBF1; }
-
-/* ── Vet Card ─────────────────────────────────────────────────────────────── */
-.vetCard { padding: 1.25rem; border-left: 3px solid var(--brand-primary); }
-.vetHighlight { background: linear-gradient(135deg, #F0FDFA, #E0F7FA); border-radius: var(--radius-md); padding: .9rem; margin-bottom: .5rem; }
-
-/* ── Similar ──────────────────────────────────────────────────────────────── */
-.similarCard { padding: 1.25rem; }
-.similarRow { display: flex; align-items: center; gap: .7rem; padding: .65rem 0; border-bottom: 1px solid var(--border-color); }
-.similarThumb { width: 34px; height: 34px; background: #E0F2FE; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-
-/* ── Modal ────────────────────────────────────────────────────────────────── */
-.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; }
-.modal { width: 100%; max-width: 400px; position: relative; padding: 2rem; }
-.closeBtn { position: absolute; top: 1rem; right: 1rem; font-size: .9rem; cursor: pointer; background: none; border: none; color: var(--text-secondary); }
-.closeBtn:hover { color: var(--text-primary); }
-.inputGroup { display: flex; flex-direction: column; gap: .4rem; }
-.inputGroup label { font-size: .82rem; font-weight: 500; color: var(--text-primary); }
-.input { padding: .6rem .85rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: .875rem; outline: none; width: 100%; }
-.input:focus { border-color: var(--brand-primary); }
-
-/* ── Mobile ───────────────────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .mainGrid { grid-template-columns: 1fr; }
-  .ecoResultGrid { grid-template-columns: 1fr; }
-  .ecoInputGrid { grid-template-columns: 1fr; }
-  .header { flex-direction: column; align-items: flex-start; }
-  .timelineStepper { flex-wrap: wrap; gap: 1rem; }
+.causeBox    { margin-bottom: 0.85rem; }
+.causeLabel  {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-secondary); margin-bottom: 0.4rem;
 }
+.causeItem   { font-size: 0.79rem; color: var(--text-primary); padding: 0.25rem 0; border-bottom: 1px solid var(--border-color); }
+.causeItem:last-child { border-bottom: none; }
+
+/* ── MIDDLE ROW: Timeline + Medication + Vet ─────────────────────────────── */
+.midRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.cardLabel {
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-secondary); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+
+/* Timeline */
+.timelineCard { padding: 1.25rem; }
+.stepper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.stepItem {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 0 0.25rem; position: relative;
+}
+.stepItem:not(:last-child)::after {
+  content: ''; position: absolute; top: 14px; left: 50%; right: -50%;
+  height: 2px; background: var(--border-color); z-index: 0;
+}
+.stepDot {
+  width: 28px; height: 28px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; z-index: 1; position: relative; margin-bottom: 0.5rem;
+}
+.stepActive  { background: var(--brand-primary); color: white; }
+.stepPending { background: var(--border-color); color: var(--text-secondary); }
+.stepDay     { font-size: 0.62rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; margin-bottom: 0.2rem; }
+.stepAction  { font-size: 0.68rem; color: var(--text-secondary); line-height: 1.35; }
+.reasoningBox {
+  display: flex; gap: 0.5rem; align-items: flex-start;
+  background: #F0FDFA; border-radius: 8px; padding: 0.6rem 0.75rem; margin-top: 1rem;
+}
+
+/* Medication */
+.medCard { padding: 1.25rem; }
+.medHighlight {
+  display: flex; gap: 0.75rem; align-items: center;
+  background: var(--bg-primary); border-radius: 10px; padding: 0.75rem; margin-bottom: 0.85rem;
+}
+.medIcon { width: 36px; height: 36px; border-radius: 8px; background: #CCFBF1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.medProp { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 0.45rem 0; border-bottom: 1px solid var(--border-color); }
+.medProp:last-of-type { border-bottom: none; }
+.medVal  { font-weight: 600; color: var(--text-primary); }
+.disclaimer { font-size: 0.7rem; color: var(--text-secondary); background: #FFFBEB; border-radius: 6px; padding: 0.5rem 0.6rem; margin-top: 0.75rem; }
+.noMed { font-size: 0.82rem; color: var(--text-secondary); text-align: center; padding: 1rem; }
+
+/* Vet Card */
+.vetCard { padding: 1.25rem; }
+.vetBox { background: var(--bg-primary); border-radius: 10px; padding: 0.85rem; }
+
+/* ── BOTTOM ROW: Emergency Care + Economic + Similar ─────────────────────── */
+.bottomRow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* Emergency Care */
+.emergencyCard { padding: 1.25rem; }
+.emergencyList { display: flex; flex-direction: column; gap: 0.6rem; }
+.emergencyItem { display: flex; align-items: flex-start; gap: 0.65rem; }
+.emergencyBullet {
+  width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem;
+  font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem;
+}
+
+/* Economic */
+.econCard { padding: 1.25rem; }
+.econInputRow { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+.econInput label { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.35rem; }
+.numInput {
+  width: 100%; padding: 0.55rem 0.7rem; border: 1px solid var(--border-color);
+  border-radius: 8px; font-size: 0.875rem; font-weight: 600; font-family: inherit;
+  outline: none; color: var(--text-primary);
+}
+.numInput:focus { border-color: var(--brand-primary); }
+.econStats { display: flex; flex-direction: column; gap: 0.6rem; }
+.econStat  { padding: 0.75rem 1rem; border-radius: 8px; }
+
+/* Similar */
+.similarCard { padding: 1.25rem; }
+.similarRow { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border-color); }
+.similarRow:last-child { border-bottom: none; }
+.similarThumb { width: 32px; height: 32px; border-radius: 8px; background: #F0FDFA; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+  z-index: 500; display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.modal {
+  background: white; border-radius: 16px; padding: 2rem;
+  width: 100%; max-width: 420px; position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.closeBtn { position: absolute; top: 1rem; right: 1rem; color: var(--text-secondary); background: none; border: none; cursor: pointer; font-size: 1rem; }
+.modalTitle { font-size: 1.1rem; font-weight: 700; margin: 0 0 0.35rem; }
+.modalSub   { font-size: 0.8rem; color: var(--text-secondary); margin: 0 0 1.25rem; }
+.modalSection { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.5rem; }
+.modalLabel { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.modalInput {
+  padding: 0.65rem 0.9rem; border: 1px solid var(--border-color); border-radius: 10px;
+  font-size: 0.875rem; font-family: inherit; outline: none;
+}
+.modalInput:focus { border-color: var(--brand-primary); }
+.modalDivider { text-align: center; font-size: 0.78rem; color: var(--text-secondary); margin: 0.75rem 0; }
+.alertSuccess { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.82rem; margin-top: 0.75rem; }
+.alertError   { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; padding: 0.6rem 0.9rem; border-radius: 8px; font-size: 0.82rem; margin-top: 0.75rem; }
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .topRow    { grid-template-columns: 220px 1fr; }
+  .summaryCard { grid-column: 1 / -1; }
+  .midRow    { grid-template-columns: 1fr 1fr; }
+  .bottomRow { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .topRow    { grid-template-columns: 1fr; }
+  .imageWrap { height: 180px; }
+  .midRow    { grid-template-columns: 1fr; }
+  .bottomRow { grid-template-columns: 1fr; }
+  .stepper   { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+  .stepItem::after { display: none; }
+}
+
+/* ── Checklist Timeline ───────────────────────────────────────────────────── */
+.checkStep {
+  display: flex; align-items: flex-start; gap: 0.85rem;
+  padding: 0.7rem 0.8rem; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border-color); margin-bottom: 0.45rem;
+  transition: background 0.15s, border-color 0.15s;
+  background: white;
+}
+.checkStep:hover { border-color: var(--brand-primary); background: #F0FDFA; }
+.checkStepDone   { background: #F0FDF4; border-color: #BBF7D0; }
+.checkbox {
+  width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border-color);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+.checkboxDone { background: var(--success); border-color: var(--success); }
+.checkDay     { font-size: 0.62rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.15rem; }
+.checkAction  { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.checkActionDone { text-decoration: line-through; color: var(--text-secondary); }
+.checkDetail  { font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem; }
+
+/* ── Healthy Fish box in confidence card ─────────────────────────────────── */
+.healthyBox {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 1rem; background: #F0FDF4; border-radius: 10px; margin: 0.5rem 0;
+}
+.healthyIcon {
+  width: 44px; height: 44px; border-radius: 50%; background: #DCFCE7;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 0.6rem;
+}
+
+/* ── Care Tips (Healthy Fish full-width) ─────────────────────────────────── */
+.careTipsCard { padding: 1.25rem; }
+.careTipsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.careTip {
+  display: flex; align-items: flex-start; gap: 0.65rem;
+  background: #F0FDF4; border-radius: 10px; padding: 0.85rem;
+}
+.tipNum {
+  width: 22px; height: 22px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+/* ── Disease Progression Simulator ──────────────────────────────────────── */
+.progressionCard { padding: 1.25rem; }
+.toggleBtn {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.75rem; font-weight: 600; color: var(--brand-primary);
+  background: #F0FDFA; border: 1px solid #CCFBF1; border-radius: 8px;
+  padding: 0.35rem 0.75rem; cursor: pointer;
+}
+.stageGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 0.75rem; }
+.stageCard { background: var(--bg-primary); border-radius: 10px; padding: 1rem; }
+.stageSymptoms { list-style: none; padding: 0; margin: 0 0 0.6rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.stageSymptom  { font-size: 0.75rem; color: var(--text-primary); display: flex; align-items: flex-start; gap: 0.4rem; }
+.stageSymptom::before { content: '•'; color: var(--text-secondary); flex-shrink: 0; }
+.stageBadge { display: inline-block; border-radius: 99px; padding: 0.2rem 0.65rem; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+
+@media (max-width: 900px) {
+  .careTipsGrid { grid-template-columns: repeat(2, 1fr); }
+  .stageGrid    { grid-template-columns: 1fr; }
+}
+

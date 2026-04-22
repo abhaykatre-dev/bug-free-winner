@@ -1,209 +1,499 @@
-import React from 'react';
-import { Download, Plus, CheckCircle2, AlertTriangle, Activity, MapPin } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Fish, AlertTriangle, CheckCircle2, Clock, TrendingDown,
+  Activity, ArrowRight, Microscope, RefreshCw, MapPin,
+  ThumbsUp, ThumbsDown, Calendar, Pill, ShieldAlert, WifiOff,
+} from 'lucide-react';
 import clsx from 'clsx';
+import { useAuth } from '../../context/AuthContext';
+import { getApprovedPlans, getAllCachedResults, type ApprovedPlan } from '../../hooks/useOfflineSync';
 import styles from './Dashboard.module.css';
 
-const MOCK_CHART_DATA = [
-  { time: '00:00', value: 45 },
-  { time: '02:00', value: 55 },
-  { time: '04:00', value: 70 },
-  { time: '06:00', value: 48 },
-  { time: '08:00', value: 85 },
-  { time: '10:00', value: 65 },
-  { time: '12:00', value: 68 },
-  { time: '14:00', value: 58 },
-  { time: '16:00', value: 45 },
-  { time: '18:00', value: 65 },
-  { time: '20:00', value: 90 },
-  { time: '22:00', value: 68 },
-];
+const API = import.meta.env.VITE_FLASK_API_URL || 'http://localhost:5001/api';
 
-const OUTBREAK_ZONES = [
-  { zone: 'Ambazari Lake Zone', risk: 82, level: 'critical' },
-  { zone: 'Futala Lake Area',   risk: 54, level: 'warning' },
-  { zone: 'Gorewada Reservoir', risk: 34, level: 'warning' },
-  { zone: 'Nag River Basin',    risk: 18, level: 'safe' },
-];
+const SEV_CONFIG: Record<string, { color: string; bg: string; badge: string; icon: React.ReactNode }> = {
+  Critical: { color: 'var(--danger)',  bg: '#FEF2F2', badge: 'critical', icon: <AlertTriangle size={14}/> },
+  Warning:  { color: 'var(--warning)', bg: '#FFFBEB', badge: 'warning',  icon: <Clock size={14}/> },
+  Mild:     { color: '#F59E0B',        bg: '#FFFBEB', badge: 'warning',  icon: <Clock size={14}/> },
+  Safe:     { color: 'var(--success)', bg: '#F0FDF4', badge: 'safe',     icon: <CheckCircle2 size={14}/> },
+};
+
+interface DiagnosisRecord {
+  diagnosis_id: string;
+  timestamp: string;
+  primary_disease: string;
+  confidence: number;
+  severity: string;
+  reasoning: string;
+  causes: { biological?: string[]; environmental?: string[] };
+  treatment: { medicines?: any[]; preventive_steps?: string[]; disclaimer?: string };
+  action_timeline: any[];
+  economic_loss: any;
+  top_predictions: { disease: string; confidence: number }[];
+  pond_id: string | null;
+}
+
+interface Zone { zone: string; risk: number; level: string; dominant_disease: string | null; case_count: number }
+
+// DO / DO NOT rules per disease class
+const JOURNEY_RULES: Record<string, { dos: string[]; donts: string[] }> = {
+  default: {
+    dos: [
+      'Isolate affected fish immediately to a quarantine tank',
+      'Test and correct water quality — pH 7–8, DO ≥ 5 mg/L',
+      'Begin prescribed medication at recommended dosage',
+      'Increase aeration by 30–40% during treatment',
+      'Monitor and log water parameters daily',
+    ],
+    donts: [
+      'Do NOT introduce new fish during the outbreak period',
+      'Do NOT overfeed — excess feed degrades water quality fast',
+      'Do NOT stop medication early, even if fish look recovered',
+      'Do NOT share nets or equipment between healthy and infected ponds',
+      'Do NOT ignore secondary symptoms — escalate if no improvement in 72 hrs',
+    ],
+  },
+  'Healthy Fish': {
+    dos: [
+      'Continue weekly water quality checks (pH, ammonia, DO)',
+      'Quarantine new stock for 14 days before introducing',
+      'Maintain feeding schedule and stocking density',
+      'Clean pond banks and remove dead vegetation',
+    ],
+    donts: [
+      'Do NOT neglect routine monitoring even when fish appear healthy',
+      'Do NOT add untested fish to the pond without quarantine',
+      'Do NOT allow runoff from agricultural fields into the pond',
+    ],
+  },
+};
+
+function getJourneyRules(disease: string) {
+  return JOURNEY_RULES[disease] || JOURNEY_RULES['default'];
+}
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
 
 export const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const navigate  = useNavigate();
+
+  const [history,   setHistory]   = useState<DiagnosisRecord[]>([]);
+  const [zones,     setZones]     = useState<Zone[]>([]);
+  const [selected,  setSelected]  = useState<DiagnosisRecord | null>(null);
+  const [loadingH,  setLoadingH]  = useState(true);
+  const [loadingZ,  setLoadingZ]  = useState(true);
+  const [refreshK,  setRefreshK]  = useState(0);
+  const [approvedPlans, setApprovedPlans] = useState<ApprovedPlan[]>([]);
+  const [isOnline, setIsOnline]   = useState(navigator.onLine);
+
+  // Load approved plans from localStorage on mount (always fresh)
+  useEffect(() => {
+    setApprovedPlans(getApprovedPlans());
+    const onOnline  = () => setIsOnline(true);
+    const onOffline = () => setIsOnline(false);
+    window.addEventListener('online',  onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => { window.removeEventListener('online', onOnline); window.removeEventListener('offline', onOffline); };
+  }, []);
+
+  useEffect(() => {
+    setLoadingH(true);
+    fetch(`${API}/diagnoses/history?limit=20`)
+      .then(r => r.json())
+      .then(d => { setHistory(d.history || []); if (d.history?.length) setSelected(d.history[0]); })
+      .catch(() => {
+        // Offline fallback: use cached results
+        const cached = getAllCachedResults();
+        const fallback: DiagnosisRecord[] = cached.map(c => ({
+          ...c.result,
+          timestamp: new Date(c.cachedAt).toISOString(),
+        }));
+        setHistory(fallback);
+        if (fallback.length) setSelected(fallback[0]);
+      })
+      .finally(() => setLoadingH(false));
+  }, [refreshK]);
+
+  useEffect(() => {
+    setLoadingZ(true);
+    fetch(`${API}/outbreak-summary`)
+      .then(r => r.json())
+      .then(d => setZones(d.zones || []))
+      .catch(() => {})
+      .finally(() => setLoadingZ(false));
+  }, [refreshK]);
+
+  // Summary stats derived from history
+  const total    = history.length;
+  const critical = history.filter(h => h.severity === 'Critical').length;
+  const healthy  = history.filter(h => h.primary_disease === 'Healthy Fish').length;
+  const avgConf  = total ? Math.round(history.reduce((s, h) => s + h.confidence, 0) / total * 100) : 0;
+
+  const rules = selected ? getJourneyRules(selected.primary_disease) : null;
+  const cfg   = selected ? (SEV_CONFIG[selected.severity] ?? SEV_CONFIG.Safe) : null;
+
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
+
+      {/* ── Welcome Bar ─────────────────────────────────────────────── */}
+      <div className={styles.welcomeBar}>
         <div>
-          <h1 className={styles.title}>System Overview</h1>
-          <p className={styles.subtitle}>Real-time aquatic stability and analysis status.</p>
+          <h1 className={styles.welcomeTitle}>
+            Welcome back, {user?.name?.split(' ')[0] ?? 'Farmer'}
+          </h1>
+          <p className={styles.welcomeSub}>
+            {total > 0
+              ? `You have ${total} recorded diagnoses · ${critical} critical case${critical !== 1 ? 's' : ''} detected`
+              : 'No diagnoses yet — upload a fish photo to get started'}
+          </p>
         </div>
-        <div className="flex gap-4">
-          <button className="btn btn-outline"><Download size={16} /> Export Report</button>
-          <button className="btn btn-primary"><Plus size={16} /> New Analysis</button>
-        </div>
-      </header>
-
-      <div className={styles.topRow}>
-        {/* Metric Cards */}
-        <div className={clsx('card', styles.metricCard)}>
-          <div className="flex justify-between items-start">
-            <div className={styles.metricLabel}>pH Level</div>
-            <span className="badge safe">STABLE</span>
-          </div>
-          <div className={styles.metricValue}>
-            8.2 <span className={styles.metricUnit}>pH</span>
-          </div>
-          <div className={clsx(styles.metricTrend, styles.trendUp)}>
-            ↗ 0.1 vs yesterday
-          </div>
-        </div>
-
-        <div className={clsx('card', styles.metricCard)}>
-          <div className="flex justify-between items-start">
-            <div className={styles.metricLabel}>Salinity</div>
-            <span className="badge safe">OPTIMAL</span>
-          </div>
-          <div className={styles.metricValue}>
-            35.4 <span className={styles.metricUnit}>ppt</span>
-          </div>
-          <div className={clsx(styles.metricTrend, styles.trendNeutral)}>
-            <CheckCircle2 size={14} /> Perfect range
-          </div>
-        </div>
-
-        <div className={clsx('card', styles.metricCard)}>
-          <div className="flex justify-between items-start">
-            <div className={styles.metricLabel}>Oxygen (DO)</div>
-            <span className="badge warning">WARNING</span>
-          </div>
-          <div className={clsx(styles.metricValue, styles.textWarning)}>
-            6.8 <span className={styles.metricUnit}>mg/L</span>
-          </div>
-          <div className={clsx(styles.metricTrend, styles.trendDown)}>
-            ↘ Low saturation
-          </div>
-        </div>
-        
-        {/* Pending Queue List */}
-        <div className={clsx('card', styles.queueCard)}>
-          <h3 className={styles.cardTitle}>Pending Analyses</h3>
-          
-          <div className={styles.queueItem}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
-              <div className={styles.queueName}>Sample #7482-A</div>
-              <div className={styles.queueTime}>12m ago</div>
-            </div>
-            <div className={styles.queueLoc}>Oceania Marine Park - Sector 4</div>
-            <div className="flex justify-between items-center mt-2">
-              <div className={styles.progressBar}><div className={styles.progressFill} style={{ width: '75%', backgroundColor: '#38BDF8' }}></div></div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--brand-primary)', marginLeft: '1rem' }}>75%</div>
-            </div>
-          </div>
-          
-          <div className={styles.queueItem}>
-            <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
-              <div className={styles.queueName}>Sample #7483-B</div>
-              <div className={styles.queueTime}>34m ago</div>
-            </div>
-            <div className={styles.queueLoc}>Blue Lagoon Research Hub</div>
-            <div className="flex justify-between items-center mt-2">
-              <div className={styles.progressBar}><div className={styles.progressFill} style={{ width: '15%' }}></div></div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '1rem' }}>In Queue</div>
-            </div>
-          </div>
-
-          <button className={styles.viewAllBtn}>View All Queue</button>
+        <div className="flex gap-2">
+          <button className="btn btn-outline" onClick={() => setRefreshK(k => k + 1)}>
+            <RefreshCw size={15}/> Refresh
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate('/diagnose')}>
+            <Microscope size={15}/> New Scan
+          </button>
         </div>
       </div>
 
-      <div className={styles.bottomRow}>
-        {/* Chart */}
-        <div className={clsx('card', styles.chartCard)}>
-          <div className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
+      {/* ── Stat Cards ──────────────────────────────────────────────── */}
+      <div className={styles.statsRow}>
+        {[
+          { icon: <Fish size={20}/>,         value: total,        label: 'Total Scans',       sub: 'All time',           color: 'var(--brand-primary)' },
+          { icon: <AlertTriangle size={20}/>, value: critical,     label: 'Critical Cases',    sub: 'Need action',        color: 'var(--danger)' },
+          { icon: <CheckCircle2 size={20}/>,  value: healthy,      label: 'Healthy Results',   sub: 'No disease found',   color: 'var(--success)' },
+          { icon: <Activity size={20}/>,      value: `${avgConf}%`, label: 'Avg Confidence',  sub: 'Model accuracy',     color: '#6366F1' },
+        ].map((s, i) => (
+          <div key={i} className={clsx('card', styles.statCard)}>
+            <div className={styles.statIcon} style={{ background: `${s.color}18`, color: s.color }}>{s.icon}</div>
             <div>
-              <h3 className={styles.cardTitle}>24h System Stability Trend</h3>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Composite sensor performance over time.</p>
-            </div>
-            <div className="flex gap-4" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
-              <div className="flex items-center gap-2">
-                <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: 'var(--brand-primary)' }}></div> Stability
-              </div>
-              <div className="flex items-center gap-2">
-                <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: 'var(--brand-secondary)' }}></div> Flow Rate
-              </div>
+              <div className={styles.statValue} style={{ color: s.color }}>{s.value}</div>
+              <div className={styles.statLabel}>{s.label}</div>
+              <div className={styles.statSub}>{s.sub}</div>
             </div>
           </div>
-          
-          <div style={{ height: '250px', width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={MOCK_CHART_DATA}>
-                <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                <Tooltip cursor={{ fill: '#F1F5F9' }} />
-                <Bar dataKey="value" fill="#88B2B3" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        ))}
+      </div>
+
+      {/* ── Main 2-col Layout ───────────────────────────────────────── */}
+      <div className={styles.mainGrid}>
+
+        {/* LEFT — History List */}
+        <div className={styles.historyCol}>
+          <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
+            <h2 className={styles.sectionTitle}>Analysis History</h2>
+            {!loadingH && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{total} records</span>}
           </div>
+
+          {loadingH ? (
+            <div className={styles.loadState}><div className={styles.spinner}/> Loading history…</div>
+          ) : history.length === 0 ? (
+            <div className={styles.emptyState}>
+              <Fish size={40} color="var(--border-color)"/>
+              <p>No analysis history yet.</p>
+              <button className="btn btn-primary" onClick={() => navigate('/diagnose')}>Run First Scan</button>
+            </div>
+          ) : (
+            <div className={styles.historyList}>
+              {history.map(rec => {
+                const c = SEV_CONFIG[rec.severity] ?? SEV_CONFIG.Safe;
+                const isActive = selected?.diagnosis_id === rec.diagnosis_id;
+                return (
+                  <div
+                    key={rec.diagnosis_id}
+                    className={clsx(styles.historyCard, isActive && styles.historyCardActive)}
+                    onClick={() => setSelected(rec)}
+                  >
+                    <div className={styles.hCardLeft} style={{ borderLeft: `3px solid ${c.color}` }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.2rem' }}>
+                        {rec.primary_disease}
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                        {relativeTime(rec.timestamp)} · {rec.pond_id ?? 'Unknown pond'}
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <span className={clsx('badge', c.badge)} style={{ fontSize: '0.6rem' }}>
+                          {rec.severity}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                          {(rec.confidence * 100).toFixed(1)}% conf
+                        </span>
+                      </div>
+                    </div>
+                    {isActive && (
+                      <div className={styles.hCardArrow}><ArrowRight size={14} color="var(--brand-primary)"/></div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Recent Activity */}
-        <div className={clsx('card', styles.activityCard)}>
-          <h3 className={styles.cardTitle}>Recent Activity</h3>
-          
-          <div className={styles.activityItem}>
-            <div className={clsx(styles.activityIcon, styles.bgTeal)}>
-              <CheckCircle2 size={16} color="var(--brand-primary)" />
+        {/* RIGHT — Journey Panel */}
+        <div className={styles.journeyCol}>
+          {!selected ? (
+            <div className={clsx('card', styles.emptyJourney)}>
+              <Fish size={48} color="var(--border-color)"/>
+              <p style={{ fontWeight: 600, marginTop: '1rem' }}>Select a diagnosis to view the full journey</p>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                Click any record on the left to see step-by-step recovery actions
+              </p>
             </div>
-            <div>
-              <div className={styles.activityTitle}>Report Finalized</div>
-              <div className={styles.activityDesc}>Coral Nursery growth analysis completed by AI model Alpha.</div>
-              <div className={styles.activityTime}>2 hours ago</div>
+          ) : (
+            <div className={styles.journey}>
+
+              {/* Journey Header */}
+              <div className={clsx('card', styles.journeyHeader)} style={{ borderLeft: `4px solid ${cfg!.color}` }}>
+                <div className="flex justify-between items-start" style={{ marginBottom: '0.75rem' }}>
+                  <div>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.3rem' }}>
+                      Diagnosis · {new Date(selected.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </div>
+                    <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: cfg!.color, margin: 0 }}>
+                      {selected.primary_disease}
+                    </h2>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: cfg!.color }}>
+                      {(selected.confidence * 100).toFixed(1)}%
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CONFIDENCE</div>
+                  </div>
+                </div>
+                {/* Confidence bar */}
+                <div style={{ height: 6, background: 'var(--border-color)', borderRadius: 3, overflow: 'hidden', marginBottom: '0.75rem' }}>
+                  <div style={{ height: '100%', borderRadius: 3, background: cfg!.color, width: `${(selected.confidence * 100).toFixed(1)}%`, transition: 'width 0.5s' }}/>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <span className={clsx('badge', cfg!.badge)}>{cfg!.icon} {selected.severity}</span>
+                  {selected.pond_id && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', background: 'var(--bg-primary)', padding: '0.2rem 0.6rem', borderRadius: '99px' }}>Pond: {selected.pond_id}</span>}
+                  <button className={styles.viewFullBtn} onClick={() => navigate(`/result/${selected.diagnosis_id}`, { state: { resultData: selected, originalImage: null } })}>
+                    Full Report <ArrowRight size={12}/>
+                  </button>
+                </div>
+              </div>
+
+              {/* AI Reasoning */}
+              {selected.reasoning && (
+                <div className={clsx('card', styles.journeySection)}>
+                  <div className={styles.sectionHead}><Microscope size={15}/> AI Reasoning</div>
+                  <p className={styles.reasoningText}>{selected.reasoning}</p>
+                </div>
+              )}
+
+              {/* DO / DON'T */}
+              <div className={styles.doGrid}>
+                <div className={clsx('card', styles.doCard)}>
+                  <div className={styles.doHead} style={{ color: 'var(--success)' }}>
+                    <ThumbsUp size={15}/> What To Do
+                  </div>
+                  <ul className={styles.doList}>
+                    {rules!.dos.map((d, i) => (
+                      <li key={i} className={styles.doItem}>
+                        <div className={styles.doBullet} style={{ background: '#DCFCE7', color: 'var(--success)' }}>✓</div>
+                        <span>{d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className={clsx('card', styles.dontCard)}>
+                  <div className={styles.doHead} style={{ color: 'var(--danger)' }}>
+                    <ThumbsDown size={15}/> What NOT To Do
+                  </div>
+                  <ul className={styles.doList}>
+                    {rules!.donts.map((d, i) => (
+                      <li key={i} className={styles.doItem}>
+                        <div className={styles.doBullet} style={{ background: '#FEE2E2', color: 'var(--danger)' }}>✗</div>
+                        <span>{d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Treatment Timeline */}
+              {selected.action_timeline.length > 0 && (
+                <div className={clsx('card', styles.journeySection)}>
+                  <div className={styles.sectionHead}><Calendar size={15}/> Recovery Timeline</div>
+                  <div className={styles.timeline}>
+                    {selected.action_timeline.slice(0, 5).map((step: any, i: number) => (
+                      <div key={i} className={styles.timelineStep}>
+                        <div className={styles.timelineDot} style={{ background: i === 0 ? 'var(--brand-primary)' : 'var(--border-color)', color: i === 0 ? 'white' : 'var(--text-secondary)' }}>
+                          {i + 1}
+                        </div>
+                        <div className={styles.timelineBody}>
+                          <div className={styles.timelineDay}>{step.day_range ?? step.days ?? `Day ${i * 3 + 1}–${i * 3 + 3}`}</div>
+                          <div className={styles.timelineAction}>{step.action ?? step.title ?? ''}</div>
+                          {step.details && <div className={styles.timelineDetail}>{step.details}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Medication */}
+              {selected.treatment?.medicines?.length > 0 && (
+                <div className={clsx('card', styles.journeySection)}>
+                  <div className={styles.sectionHead}><Pill size={15}/> Prescribed Medication</div>
+                  {selected.treatment.medicines.slice(0, 2).map((m: any, i: number) => (
+                    <div key={i} className={styles.medRow}>
+                      <div className={styles.medName}>{typeof m === 'string' ? m : m.name}</div>
+                      {m.dose && <div className={styles.medDose}>{m.dose}</div>}
+                      {m.frequency && <div className={styles.medFreq}>{m.frequency}</div>}
+                    </div>
+                  ))}
+                  {selected.treatment.disclaimer && (
+                    <div className={styles.disclaimer}><ShieldAlert size={13}/> {selected.treatment.disclaimer}</div>
+                  )}
+                </div>
+              )}
+
+              {/* Economic Loss */}
+              {selected.economic_loss && (
+                <div className={clsx('card', styles.journeySection)}>
+                  <div className={styles.sectionHead}><TrendingDown size={15}/> Estimated Economic Impact</div>
+                  <div className={styles.econGrid}>
+                    <div className={styles.econStat} style={{ borderLeft: '3px solid var(--danger)' }}>
+                      <div className={styles.econLabel}>Loss Without Treatment</div>
+                      <div className={styles.econValue} style={{ color: 'var(--danger)' }}>
+                        ₹{(selected.economic_loss.revenue_loss_day14_inr ?? 0).toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                    <div className={styles.econStat} style={{ borderLeft: '3px solid var(--success)' }}>
+                      <div className={styles.econLabel}>Net Saving (if treated)</div>
+                      <div className={styles.econValue} style={{ color: 'var(--success)' }}>
+                        ₹{(selected.economic_loss.net_saving_inr ?? 0).toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-          
-          <div className={styles.activityItem}>
-            <div className={clsx(styles.activityIcon, styles.bgBlue)}>
-              <Activity size={16} color="#0EA5E9" />
-            </div>
-            <div>
-              <div className={styles.activityTitle}>Sensor Calibrated</div>
-              <div className={styles.activityDesc}>DO sensor in Tank 7-B re-calibrated remotely.</div>
-              <div className={styles.activityTime}>5 hours ago</div>
-            </div>
-          </div>
-          
-          <div className={styles.activityItem}>
-            <div className={clsx(styles.activityIcon, styles.bgRed)}>
-              <AlertTriangle size={16} color="var(--danger)" />
-            </div>
-            <div>
-              <div className={styles.activityTitle}>System Warning</div>
-              <div className={styles.activityDesc}>Unexpected nitrate spike detected in Holding Tank 12.</div>
-              <div className={styles.activityTime}>Yesterday</div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Outbreak Prediction Widget */}
+      {/* ── Outbreak Widget (bottom, full-width, live from DB) ────── */}
       <div className={clsx('card', styles.outbreakCard)}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+        <div className="flex justify-between items-center" style={{ marginBottom: '1.25rem' }}>
           <div>
-            <h3 className={styles.cardTitle}>⚠️ Regional Outbreak Prediction — Nagpur</h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>AI-estimated disease outbreak risk by geographic zone.</p>
+            <h3 className={styles.sectionTitle}>
+              <MapPin size={15} style={{ display: 'inline', marginRight: 6, color: 'var(--brand-primary)' }}/>
+              Regional Outbreak Risk — Nagpur
+            </h3>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: 0 }}>
+              Real-time risk derived from all recorded diagnoses across geographic zones
+            </p>
           </div>
-          <span className="badge critical">LIVE MONITORING</span>
+          <span className="badge critical" style={{ fontSize: '0.65rem' }}>LIVE</span>
         </div>
-        <div className={styles.outbreakGrid}>
-          {OUTBREAK_ZONES.map((z, i) => (
-            <div key={i} className={clsx(styles.outbreakZone, styles[`outbreak_${z.level}`])}>
-              <div className={styles.outbreakZoneName}><MapPin size={12} /> {z.zone}</div>
-              <div className={styles.outbreakBar}>
-                <div className={styles.outbreakFill} style={{ width: `${z.risk}%`, background: z.level === 'critical' ? 'var(--danger)' : z.level === 'warning' ? 'var(--warning)' : 'var(--success)' }} />
-              </div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: z.level === 'critical' ? 'var(--danger)' : z.level === 'warning' ? 'var(--warning)' : 'var(--success)' }}>
-                {z.risk}/100
-              </div>
-            </div>
-          ))}
-        </div>
+        {loadingZ ? (
+          <div className={styles.loadState}><div className={styles.spinner}/></div>
+        ) : (
+          <div className={styles.outbreakGrid}>
+            {zones.map((z, i) => {
+              const c = z.level === 'critical' ? 'var(--danger)' : z.level === 'warning' ? 'var(--warning)' : 'var(--success)';
+              return (
+                <div key={i} className={styles.zoneCard}>
+                  <div className="flex justify-between items-center" style={{ marginBottom: '0.5rem' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{z.zone}</div>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: c }}>{z.risk}/100</span>
+                  </div>
+                  <div style={{ height: 6, background: 'var(--border-color)', borderRadius: 3, overflow: 'hidden', marginBottom: '0.4rem' }}>
+                    <div style={{ height: '100%', borderRadius: 3, background: c, width: `${z.risk}%`, transition: 'width 0.6s' }}/>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                    {z.case_count} case{z.case_count !== 1 ? 's' : ''}
+                    {z.dominant_disease ? ` · ${z.dominant_disease}` : ' · No data'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
+
+      {/* ── Approved Treatment Plans ──────────────────────────────── */}
+      {approvedPlans.length > 0 && (
+        <div className={styles.approvedSection}>
+          <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
+            <h2 className={styles.sectionTitle}>
+              <CheckCircle2 size={16} color="var(--success)" style={{ display: 'inline', marginRight: 6 }}/>
+              Approved Treatment Plans
+            </h2>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+              {approvedPlans.length} active plan{approvedPlans.length > 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className={styles.approvedGrid}>
+            {approvedPlans.map(plan => {
+              const sevCfg = SEV_CONFIG[plan.severity] ?? SEV_CONFIG.Safe;
+              const totalSteps = 5;
+              const done = plan.completedSteps?.length ?? 0;
+              const pct  = Math.round((done / totalSteps) * 100);
+              return (
+                <div key={plan.diagnosisId} className={styles.approvedCard}>
+                  <div className="flex justify-between items-start" style={{ marginBottom: '0.6rem' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.15rem' }}>{plan.disease}</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                        Approved {new Date(plan.approvedAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}
+                      </div>
+                    </div>
+                    <span className={clsx('badge', sevCfg.badge)} style={{ fontSize: '0.62rem' }}>{plan.severity}</span>
+                  </div>
+
+                  {/* Recovery progress */}
+                  <div style={{ marginBottom: '0.6rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                      <span>Recovery Progress</span>
+                      <span style={{ fontWeight: 700, color: sevCfg.color }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: 6, background: 'var(--border-color)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 3, background: pct === 100 ? 'var(--success)' : sevCfg.color, width: `${pct}%`, transition: 'width 0.5s' }}/>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                      Confidence: <strong style={{ color: 'var(--text-primary)' }}>{Math.round(plan.confidence * 100)}%</strong>
+                    </div>
+                    <button
+                      className="btn btn-outline"
+                      style={{ fontSize: '0.72rem', padding: '0.3rem 0.7rem' }}
+                      onClick={() => navigate(`/result/${plan.diagnosisId}`)}
+                    >
+                      Track <ArrowRight size={11}/>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Offline mode notice */}
+      {!isOnline && (
+        <div className={styles.offlineNotice}>
+          <WifiOff size={14}/>
+          You are offline. Showing cached data. Translation, Telegram alerts, and map features are disabled.
+        </div>
+      )}
+
     </div>
   );
 };

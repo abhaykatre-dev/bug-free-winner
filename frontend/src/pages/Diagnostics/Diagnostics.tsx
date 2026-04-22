@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, FileImage, ShieldCheck, Activity, Eye, Mic } from 'lucide-react';
+import { UploadCloud, FileImage, ShieldCheck, Activity, Eye, Mic, MicOff, Search, AlertTriangle, CheckCircle2, Volume2, WifiOff } from 'lucide-react';
 import clsx from 'clsx';
 import styles from './Diagnostics.module.css';
+import { useLang, LANGUAGES } from '../../context/LangContext';
+import { matchSymptomsToDisease } from '../../data/diseaseData';
+import { saveToQueue, cacheResult } from '../../hooks/useOfflineSync';
 
-// Sample images from the training dataset for quick demo
 const SAMPLE_IMAGES = [
   { label: 'Bacterial Red Disease', img: '/sample_bacterial_red.jpg', badge: 'critical' },
   { label: 'Fungal Saprolegniasis', img: '/sample_fungal.jpg',        badge: 'warning' },
@@ -14,13 +16,21 @@ const SAMPLE_IMAGES = [
 ];
 
 export const Diagnostics: React.FC = () => {
+  const [activeTab, setActiveTab]       = useState<'upload' | 'voice'>('upload');
   const [isDragging, setIsDragging]     = useState(false);
   const [preview, setPreview]           = useState<string | null>(null);
   const [isUploading, setIsUploading]   = useState(false);
-  const [language, setLanguage]         = useState('en');
-  const [isListening, setIsListening]   = useState(false);
+  // Voice tab
+  const [isRecording, setIsRecording]   = useState(false);
+  const [transcript,  setTranscript]    = useState('');
+  const [voiceResult, setVoiceResult]   = useState<ReturnType<typeof matchSymptomsToDisease> | null>(null);
+  const [voiceError,  setVoiceError]    = useState<string | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  const { lang, setLang, t } = useLang();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_FLASK_API_URL || 'http://localhost:5001/api';
 
   /* ── Drag / Drop / Select ────────────────────────────────────────────── */
   const handleDragOver  = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
@@ -48,36 +58,93 @@ export const Diagnostics: React.FC = () => {
     reader.readAsDataURL(blob);
   };
 
-  /* ── Voice Input (Web Speech API) ────────────────────────────────────── */
-  const handleVoiceInput = () => {
+  /* ── Voice Symptom Detection ─────────────────────────────────────────── */
+  const startRecording = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert('Voice not supported in this browser. Use Chrome.'); return; }
+    if (!SR) { setVoiceError('Voice recognition not supported. Please use Chrome.'); return; }
+    setVoiceError(null); setTranscript(''); setVoiceResult(null);
     const rec = new SR();
-    rec.lang = language === 'hi' ? 'hi-IN' : language === 'mr' ? 'mr-IN' : language === 'ta' ? 'ta-IN' : 'en-IN';
-    rec.onstart  = () => setIsListening(true);
-    rec.onend    = () => setIsListening(false);
+    recognitionRef.current = rec;
+    rec.lang = lang === 'hi' ? 'hi-IN' : lang === 'mr' ? 'mr-IN' : lang === 'ta' ? 'ta-IN' : 'en-IN';
+    rec.continuous = false; rec.interimResults = true;
+    rec.onstart  = () => setIsRecording(true);
+    rec.onend    = () => setIsRecording(false);
     rec.onresult = (e: any) => {
-      const heard = e.results[0][0].transcript.toLowerCase();
-      if (heard.includes('analyz') || heard.includes('scan') || heard.includes('detect')) {
-        handleAnalyze();
+      const heard = Array.from(e.results).map((r: any) => r[0].transcript).join(' ');
+      setTranscript(heard);
+      if (e.results[e.results.length - 1].isFinal) {
+        const match = matchSymptomsToDisease(heard);
+        setVoiceResult(match);
       }
     };
+    rec.onerror = (e: any) => { setVoiceError(`Error: ${e.error}`); setIsRecording(false); };
     rec.start();
+  };
+
+  const stopRecording = () => {
+    recognitionRef.current?.stop();
+    setIsRecording(false);
+    if (transcript) {
+      const match = matchSymptomsToDisease(transcript);
+      setVoiceResult(match);
+    }
+  };
+
+  const analyzeVoiceResult = () => {
+    if (!voiceResult) return;
+    // Navigate to result with synthetic data so the result page renders
+    const synth = {
+      diagnosis_id:    `voice_${Date.now()}`,
+      primary_disease:  voiceResult.disease,
+      confidence:       voiceResult.confidence,
+      severity:         voiceResult.severity,
+      reasoning:        `Based on your described symptoms: "${transcript}". Keywords matched: ${voiceResult.keywords.join(', ')}.`,
+      top_predictions:  [{ disease: voiceResult.disease, confidence: voiceResult.confidence }],
+      causes:           { biological: ['Voice-based symptom analysis — confirm with image scan'], environmental: [] },
+      treatment:        {},
+      action_timeline:  [],
+      similar_cases:    [],
+    };
+    navigate(`/result/${synth.diagnosis_id}`, { state: { resultData: synth, originalImage: null } });
   };
 
   /* ── AI Inference Call ───────────────────────────────────────────────── */
   const handleAnalyze = async () => {
     if (!preview) return;
+    const base64Data = preview.split(',')[1];
+
+    // ── Offline: queue for later sync ─────────────────────────────────
+    if (!navigator.onLine) {
+      const queued = saveToQueue({ imageBase64: base64Data, language: lang });
+      const offlineResult = {
+        diagnosis_id:   queued.id,
+        primary_disease: 'Preliminary Analysis',
+        confidence:      0,
+        severity:        'Warning',
+        reasoning:       'You are currently offline. This is a preliminary record. Full AI analysis will run automatically when you reconnect.',
+        top_predictions: [{ disease: 'Pending — connect to sync', confidence: 0 }],
+        causes:          { biological: ['Offline mode — full analysis pending'], environmental: [] },
+        treatment:       {},
+        action_timeline: [],
+        similar_cases:   [],
+        offline:         true,
+      };
+      cacheResult(queued.id, offlineResult, preview);
+      navigate(`/result/${queued.id}`, { state: { resultData: offlineResult, originalImage: preview } });
+      return;
+    }
+
+    // ── Online: run full inference ─────────────────────────────────
     setIsUploading(true);
     try {
-      const base64Data = preview.split(',')[1];
-      const response = await fetch('http://localhost:5001/api/diagnose', {
+      const response = await fetch(`${API_URL}/diagnose`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64Data, language }),
+        body: JSON.stringify({ image: base64Data, language: lang }),
       });
       if (!response.ok) throw new Error('Diagnosis failed');
       const data = await response.json();
+      cacheResult(data.diagnosis_id, data, preview);   // cache for offline viewing
       navigate(`/result/${data.diagnosis_id}`, { state: { resultData: data, originalImage: preview } });
     } catch (err) {
       console.error(err);
@@ -99,26 +166,29 @@ export const Diagnostics: React.FC = () => {
         </div>
         <div className="flex gap-2">
           <select
-            value={language}
-            onChange={e => setLanguage(e.target.value)}
+            value={lang}
+            onChange={e => setLang(e.target.value as any)}
             className={styles.langSelect}
           >
-            <option value="en">🇬🇧 English</option>
-            <option value="hi">🇮🇳 हिन्दी</option>
-            <option value="mr">🇮🇳 मराठी</option>
-            <option value="ta">🇮🇳 தமிழ்</option>
+            {LANGUAGES.map(l => (
+              <option key={l.code} value={l.code}>{l.label} — {l.native}</option>
+            ))}
           </select>
-          <button
-            className={clsx('btn', isListening ? 'btn-primary' : 'btn-outline')}
-            onClick={handleVoiceInput}
-            title="Say 'Analyze' to start"
-          >
-            <Mic size={16} />
-            {isListening ? 'Listening…' : 'Voice'}
-          </button>
         </div>
       </header>
 
+      {/* Tab Switcher */}
+      <div className={styles.tabRow}>
+        <button className={clsx(styles.tab, activeTab === 'upload' && styles.tabActive)} onClick={() => setActiveTab('upload')}>
+          <FileImage size={15}/> {t('Upload Image')}
+        </button>
+        <button className={clsx(styles.tab, activeTab === 'voice' && styles.tabActive)} onClick={() => setActiveTab('voice')}>
+          <Mic size={15}/> {t('Voice Symptom Check')}
+        </button>
+      </div>
+
+      {/* ── Upload Tab ────────────────────────────────────────────── */}
+      {activeTab === 'upload' && (<>
       <div className={styles.topSection}>
         {/* Upload Card */}
         <div className={clsx(styles.uploadCard, 'card')}>
@@ -291,6 +361,111 @@ export const Diagnostics: React.FC = () => {
           </tbody>
         </table>
       </div>
+      </> )} {/* end upload tab */}
+
+      {/* ── Voice Symptom Tab ─────────────────────────────────────────── */}
+      {activeTab === 'voice' && (
+        <div className={clsx('card', styles.voicePanel)}>
+          <div className={styles.voiceHeader}>
+            <div>
+              <h2 className={styles.voiceTitle}>{t('Voice Symptom Check')}</h2>
+              <p className={styles.voiceSub}>
+                Describe what you see — e.g. "fish has white spots on fins and is not eating" — and our AI will match it to a disease.
+              </p>
+            </div>
+          </div>
+
+          {/* Big mic button */}
+          <div className={styles.voiceMicWrap}>
+            <button
+              className={clsx(styles.micBtn, isRecording && styles.micBtnActive)}
+              onClick={isRecording ? stopRecording : startRecording}
+            >
+              {isRecording ? <MicOff size={32}/> : <Mic size={32}/>}
+            </button>
+            <div className={styles.micLabel}>
+              {isRecording
+                ? <><span className={styles.recDot}/> {t('Stop Recording')}</>
+                : t('Start Recording')}
+            </div>
+          </div>
+
+          {/* Transcript box */}
+          {(transcript || isRecording) && (
+            <div className={styles.transcriptBox}>
+              <div className={styles.transcriptLabel}>{t('Describe Symptoms')}:</div>
+              <div className={styles.transcriptText}>
+                {transcript || <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Listening…</span>}
+              </div>
+            </div>
+          )}
+
+          {voiceError && (
+            <div className={styles.voiceError}><AlertTriangle size={14}/> {voiceError}</div>
+          )}
+
+          {/* Voice Result Card */}
+          {voiceResult && !isRecording && (
+            <div className={clsx(styles.voiceResult, voiceResult.severity === 'Critical' ? styles.voiceResultCritical : voiceResult.severity === 'Safe' ? styles.voiceResultSafe : styles.voiceResultWarn)}>
+              <div className="flex justify-between items-start" style={{ marginBottom: '0.75rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+                    AI Symptom Match
+                  </div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{voiceResult.disease}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                    Matched keywords: {voiceResult.keywords.join(', ') || 'general symptoms'}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900 }}>{Math.round(voiceResult.confidence * 100)}%</div>
+                  <div style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--text-secondary)' }}>CONFIDENCE</div>
+                </div>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <span className={clsx('badge', voiceResult.severity === 'Critical' ? 'critical' : voiceResult.severity === 'Safe' ? 'safe' : 'warning')}>
+                  {voiceResult.severity}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Confirm with image scan for full report</span>
+              </div>
+              <div className="flex gap-2 flex-wrap" style={{ marginTop: '1rem' }}>
+                <button className="btn btn-primary" onClick={analyzeVoiceResult}>
+                  <Search size={14}/> View Full Report
+                </button>
+                <button className="btn btn-outline" onClick={() => { setVoiceResult(null); setTranscript(''); }}>
+                  Try Again
+                </button>
+                <button className="btn btn-outline" onClick={() => setActiveTab('upload')}>
+                  <FileImage size={14}/> Upload Image Instead
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Hint keywords */}
+          {!voiceResult && !isRecording && (
+            <div className={styles.voiceHints}>
+              <div className={styles.voiceHintsTitle}>Try saying:</div>
+              <div className={styles.voiceHintTags}>
+                {[
+                  'fish has white spots on body',
+                  'red patches on fins and skin',
+                  'fish is not eating and swimming slow',
+                  'white cotton like fungus on fish',
+                  'fish has swollen belly',
+                  'white tail disease',
+                ].map((hint, i) => (
+                  <span key={i} className={styles.hintTag} onClick={() => { setTranscript(hint); setVoiceResult(matchSymptomsToDisease(hint)); }}>
+                    "{hint}"
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
     </div>
   );
 };
+

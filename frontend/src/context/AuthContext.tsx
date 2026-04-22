@@ -1,50 +1,99 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  auth, googleProvider,
+  signInWithPopup, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  updateProfile, type FirebaseUser,
+} from '../lib/firebase';
 
 interface User {
   id: string;
   name: string;
+  email: string;
   role: string;
+  photoURL: string | null;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (name: string, role: string) => void;
-  logout: () => void;
+  loading: boolean;
+  loginWithGoogle: () => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
+  registerWithEmail: (name: string, email: string, password: string, role: string) => Promise<void>;
+  loginDev: (name: string, role: string) => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+function firebaseUserToUser(fbUser: FirebaseUser, role = 'Aqua Farmer'): User {
+  return {
+    id: fbUser.uid,
+    name: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
+    email: fbUser.email || '',
+    role: localStorage.getItem('aquaguard_role') || role,
+    photoURL: fbUser.photoURL,
+  };
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local storage for mock dev session
-    const stored = localStorage.getItem('aquaguard_user');
-    if (stored) {
-      setUser(JSON.parse(stored));
-    }
+    // Firebase auth state listener
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      if (fbUser) {
+        setUser(firebaseUserToUser(fbUser));
+      } else {
+        // Fall back to dev session
+        const stored = localStorage.getItem('aquaguard_user');
+        setUser(stored ? JSON.parse(stored) : null);
+      }
+      setLoading(false);
+    });
+    return unsubscribe;
   }, []);
 
-  const login = (name: string, role: string) => {
-    const newUser = { id: 'dev_' + Date.now(), name, role };
-    setUser(newUser);
-    localStorage.setItem('aquaguard_user', JSON.stringify(newUser));
+  const loginWithGoogle = async () => {
+    const result = await signInWithPopup(auth, googleProvider);
+    setUser(firebaseUserToUser(result.user));
   };
 
-  const logout = () => {
-    setUser(null);
+  const loginWithEmail = async (email: string, password: string) => {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    setUser(firebaseUserToUser(result.user));
+  };
+
+  const registerWithEmail = async (name: string, email: string, password: string, role: string) => {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(result.user, { displayName: name });
+    localStorage.setItem('aquaguard_role', role);
+    setUser(firebaseUserToUser(result.user, role));
+  };
+
+  const loginDev = (name: string, role: string) => {
+    const u: User = { id: 'dev_' + Date.now(), name, email: '', role, photoURL: null };
+    setUser(u);
+    localStorage.setItem('aquaguard_user', JSON.stringify(u));
+  };
+
+  const logout = async () => {
+    await signOut(auth).catch(() => {});
     localStorage.removeItem('aquaguard_user');
+    localStorage.removeItem('aquaguard_role');
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginWithGoogle, loginWithEmail, registerWithEmail, loginDev, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 };

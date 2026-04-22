@@ -1,51 +1,78 @@
 .container { display: flex; flex-direction: column; gap: 1.5rem; }
-.header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-.title  { font-size: 1.4rem; font-weight: 600; color: var(--brand-secondary); margin-bottom: .25rem; }
-.subtitle { color: var(--text-secondary); font-size: .875rem; }
 
-.summaryRow { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
-.summaryCard { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; }
-.summaryValue { font-size: 1.75rem; font-weight: 700; line-height: 1; }
-.summaryLabel { font-size: .8rem; color: var(--text-secondary); margin-top: .2rem; }
+.header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); }
+.title  { font-size: 1.3rem; font-weight: 800; color: var(--brand-secondary); margin: 0 0 0.3rem; }
+.subtitle { font-size: 0.82rem; color: var(--text-secondary); margin: 0; }
 
-.pondGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
+/* Summary row: 4 equal cards */
+.summaryRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.summaryCard { display: flex; align-items: center; gap: 0.85rem; padding: 1.1rem 1.25rem; }
 
-.pondCard {
-  padding: 0; overflow: hidden; cursor: pointer; transition: all .2s;
-  border: 2px solid transparent;
-}
-.pondCard:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.pondCardActive { border-color: var(--brand-primary); box-shadow: 0 0 0 4px #CCFBF1; }
+/* Pond grid: 4 columns, consistent cards */
+.pondGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-items: start; }
 
-.pondImageWrap { position: relative; height: 160px; overflow: hidden; background: #0f172a; }
-.pondImage { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pondCard { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.pondHead { display: flex; justify-content: space-between; align-items: flex-start; padding: 1rem 1.1rem 0.85rem; }
 
-.pondBody { padding: 1.25rem; }
-.pondName { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
-.pondMeta { font-size: .75rem; color: var(--text-secondary); }
+/* Metrics: 4 equal columns inside card */
+.metricsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+.metric { padding: 0.65rem 0.5rem; text-align: center; }
+.metric:not(:last-child) { border-right: 1px solid var(--border-color); }
+.metricLabel { display: flex; align-items: center; justify-content: center; gap: 2px; font-size: 0.62rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.25rem; }
+.metricValue { font-size: 1.05rem; font-weight: 800; color: var(--text-primary); }
 
-.metricsGrid { display: grid; grid-template-columns: repeat(4,1fr); gap: .5rem; margin-top: 1rem; }
-.metric { background: var(--bg-primary); border-radius: var(--radius-sm); padding: .5rem; text-align: center; }
-.metricLabel { font-size: .65rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; margin-bottom: .2rem; display: flex; align-items: center; justify-content: center; gap: .2rem; }
-.metricValue { font-size: .9rem; font-weight: 700; color: var(--text-primary); }
+.pondActions { display: flex; gap: 0.5rem; padding: 0 1.1rem 1rem; }
 
-.addPondCard {
-  border: 2px dashed var(--border-color); background: transparent;
+/* Add pond card */
+.addCard {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 2.5rem 1.5rem; cursor: pointer;
-  transition: all .2s; box-shadow: none; min-height: 280px;
+  padding: 2rem 1rem; cursor: pointer; border: 2px dashed var(--border-color);
+  background: var(--bg-primary); min-height: 200px;
+  transition: border-color 0.15s;
 }
-.addPondCard:hover { border-color: var(--brand-primary); background: white; }
-.addPondIcon {
-  width: 56px; height: 56px; border-radius: 50%; background: var(--bg-primary);
-  display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+.addCard:hover { border-color: var(--brand-primary); }
+
+/* Overlay */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+  z-index: 400; display: flex; align-items: center; justify-content: center; padding: 1.5rem;
 }
 
-@media (max-width: 768px) {
-  .summaryRow { grid-template-columns: repeat(2,1fr); }
-  .pondGrid { grid-template-columns: 1fr; }
+/* History modal */
+.histModal {
+  background: white; border-radius: 16px; width: 100%; max-width: 540px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2); max-height: 80vh;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.histModalHead { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+.histModalTitle { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.2rem; }
+.histModalSub   { font-size: 0.75rem; color: var(--text-secondary); }
+.histModalBody  { overflow-y: auto; flex: 1; padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.histRow { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: var(--bg-primary); border-radius: 8px; padding: 0.75rem 0.9rem; }
+.histRowLeft { flex: 1; padding-left: 0.75rem; }
+
+.closeBtn { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem; border-radius: 6px; }
+.closeBtn:hover { background: var(--bg-primary); color: var(--text-primary); }
+
+.viewBtn { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.72rem; font-weight: 600; color: var(--brand-primary); background: #F0FDFA; border: none; border-radius: 99px; padding: 0.25rem 0.65rem; cursor: pointer; }
+.viewBtn:hover { background: #CCFBF1; }
+
+.emptyHist { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 2.5rem; color: var(--text-secondary); text-align: center; }
+.emptyHist p { font-size: 0.85rem; margin: 0; }
+
+/* States */
+.loadState { display: flex; align-items: center; gap: 0.75rem; padding: 2rem; font-size: 0.82rem; color: var(--text-secondary); justify-content: center; }
+.errorBox  { display: flex; align-items: center; gap: 0.5rem; background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; border-radius: 10px; padding: 1rem 1.25rem; font-size: 0.85rem; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 20px; height: 20px; border: 2.5px solid #CCFBF1; border-top-color: var(--brand-primary); border-radius: 50%; animation: spin 0.75s linear infinite; flex-shrink: 0; }
+
+@media (max-width: 1200px) {
+  .pondGrid    { grid-template-columns: repeat(2, 1fr); }
+  .summaryRow  { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .pondGrid    { grid-template-columns: 1fr; }
+  .summaryRow  { grid-template-columns: repeat(2, 1fr); }
 }

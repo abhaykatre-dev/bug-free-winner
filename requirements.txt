@@ -1,0 +1,8 @@
+# Root dependencies
+#
+# This project is primarily a Flask backend. Install backend deps with:
+#   pip install -r backend/requirements.txt
+#
+# Keeping this file to satisfy tooling that expects a root requirements.txt.
+-r backend/requirements.txt
+

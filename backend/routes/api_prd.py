@@ -6,8 +6,11 @@ Endpoints:
   POST   /api/economic-estimate     — Standalone economic loss estimate
   GET    /api/pond-risk/<pond_id>   — Pond risk score
   POST   /api/ponds                 — Register/update a pond
+  GET    /api/ponds                 — List all ponds
   GET    /api/ponds/<pond_id>       — Get pond details
   GET    /api/outbreak-predict      — Outbreak risk for a geographic zone
+  GET    /api/outbreak-summary      — Real-time zone risk from SQLite
+  GET    /api/diagnoses/history     — Recent diagnosis history (last 20)
   POST   /api/translate             — Text translation
   GET    /api/vets                  — Nearby vet locator
   POST   /api/diagnose/sync         — Batch sync offline queued diagnoses
@@ -429,6 +432,18 @@ def create_pond():
     return jsonify({"pond_id": pond_id, "message": "Pond registered successfully."})
 
 
+@api_bp.get("/ponds")
+@require_auth
+def list_ponds():
+    """Return all ponds with latest risk scores."""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM ponds ORDER BY last_updated DESC")
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return jsonify({"ponds": rows, "count": len(rows)})
+
+
 @api_bp.get("/ponds/<pond_id>")
 @require_auth
 def get_pond(pond_id: str):
@@ -440,6 +455,55 @@ def get_pond(pond_id: str):
     if not row:
         return _error(ApiError(code="POND_NOT_FOUND", message="Pond not found.", http_status=404))
     return jsonify(dict(row))
+
+
+@api_bp.get("/outbreak-summary")
+@require_auth
+def outbreak_summary():
+    """
+    Real-time outbreak risk per geographic zone derived from SQLite diagnoses.
+    Returns zone-level aggregated risk for the Dashboard widget.
+    """
+    ZONES = [
+        {"zone": "Ambazari Lake Zone",  "lat": 21.14, "lng": 79.05, "radius_km": 5},
+        {"zone": "Futala Lake Area",     "lat": 21.11, "lng": 79.05, "radius_km": 4},
+        {"zone": "Gorewada Reservoir",   "lat": 21.17, "lng": 79.10, "radius_km": 6},
+        {"zone": "Nag River Basin",      "lat": 21.09, "lng": 79.07, "radius_km": 8},
+    ]
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT primary_disease, lat, lng, severity, confidence FROM diagnoses WHERE lat IS NOT NULL AND lng IS NOT NULL"
+    )
+    all_rows = cur.fetchall()
+    conn.close()
+
+    sev_weights = {"Mild": 20, "Moderate": 55, "Critical": 90, "Safe": 5}
+    result = []
+    for z in ZONES:
+        nearby = [
+            r for r in all_rows
+            if _haversine_km(z["lat"], z["lng"], float(r["lat"]), float(r["lng"])) <= z["radius_km"]
+        ]
+        if nearby:
+            avg = sum(sev_weights.get(r["severity"], 30) for r in nearby) / len(nearby)
+            risk = min(100, int(round(avg)))
+            dominant = max(
+                set(r["primary_disease"] for r in nearby),
+                key=lambda d: sum(1 for r in nearby if r["primary_disease"] == d)
+            )
+        else:
+            risk = 0
+            dominant = None
+        level = "safe" if risk <= 30 else ("warning" if risk <= 65 else "critical")
+        result.append({
+            "zone": z["zone"],
+            "risk": risk,
+            "level": level,
+            "dominant_disease": dominant,
+            "case_count": len(nearby),
+        })
+    return jsonify({"zones": result})
 
 
 # --------------------------------------------------------------------------- #
@@ -694,17 +758,17 @@ def alert_sms():
     data = request.get_json(force=True) or {}
     phone = data.get("phone")
     message = data.get("message")
-    
+
     if not phone or not message:
         return _error(ApiError(code="INVALID_REQUEST", message="Phone and message are required", http_status=400))
-        
-    from services.sms import send_sms_alert
-    success = send_sms_alert(phone, message)
-    
+
+    from services.sms import send_sms_alert, get_sms_error
+    success, error_msg = send_sms_alert(phone, message)
+
     if success:
         return jsonify({"success": True})
     else:
-        return _error(ApiError(code="SMS_FAILED", message="Failed to send SMS via Fast2SMS", http_status=500))
+        return jsonify({"success": False, "message": error_msg or "SMS sending failed"}), 400
 
 
 # --------------------------------------------------------------------------- #
@@ -730,3 +794,61 @@ def alert_telegram():
         return jsonify({"success": True})
     else:
         return _error(ApiError(code="TELEGRAM_FAILED", message="Failed to send Telegram message", http_status=500))
+
+
+# --------------------------------------------------------------------------- #
+#  GET /api/diagnoses/history
+# --------------------------------------------------------------------------- #
+@api_bp.get("/diagnoses/history")
+@require_auth
+def diagnoses_history():
+    """
+    Return the last 20 diagnoses for the dashboard history view.
+    Includes top_predictions, treatment steps, action_timeline, and economic_loss.
+    """
+    limit = min(int(request.args.get("limit", 20)), 50)
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT diagnosis_id, timestamp, primary_disease, confidence, severity,
+               reasoning, causes_json, treatment_json, action_timeline_json,
+               economic_loss_json, top_predictions_json, pond_id, language
+        FROM diagnoses
+        ORDER BY timestamp DESC
+        LIMIT ?
+        """,
+        (limit,),
+    )
+    rows = cur.fetchall()
+    conn.close()
+
+    records = []
+    for r in rows:
+        try:
+            treatment   = json.loads(r["treatment_json"]   or "{}")
+            timeline    = json.loads(r["action_timeline_json"] or "[]")
+            economic    = json.loads(r["economic_loss_json"] or "null")
+            causes      = json.loads(r["causes_json"]       or "{}")
+            top_preds   = json.loads(r["top_predictions_json"] or "[]")
+        except Exception:
+            treatment, timeline, economic, causes, top_preds = {}, [], None, {}, []
+
+        records.append({
+            "diagnosis_id":    r["diagnosis_id"],
+            "timestamp":       r["timestamp"],
+            "primary_disease": r["primary_disease"],
+            "confidence":      float(r["confidence"]),
+            "severity":        r["severity"],
+            "reasoning":       r["reasoning"],
+            "causes":          causes,
+            "treatment":       treatment,
+            "action_timeline": timeline,
+            "economic_loss":   economic,
+            "top_predictions": top_preds,
+            "pond_id":         r["pond_id"],
+            "language":        r["language"],
+        })
+
+    return jsonify({"history": records, "count": len(records)})
+

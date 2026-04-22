@@ -1,76 +1,85 @@
 """
-Telegram service — sends PRD §14.1 formatted report messages.
+Telegram alert service — uses direct Bot API HTTP calls (no library dependency).
 """
 from __future__ import annotations
-
-import json
 import logging
+import requests
 
 log = logging.getLogger(__name__)
 
 
-def send_telegram_report(*, chat_id: str, detection_id: str) -> bool:
-    """
-    Build and send the full PRD-format diagnosis report to Telegram.
-    FishAI_PRD §FR-12.3: disease, confidence, severity, treatment summary, economic loss, vet info.
-    """
-    from services.settings import Settings
-    from db.sqlite import get_conn
-
-    settings = Settings.from_env()
-    if not settings.telegram_bot_token:
-        log.warning("TELEGRAM_BOT_TOKEN not configured — skipping Telegram send")
+def send_telegram_message(chat_id: str, message: str, settings=None) -> bool:
+    """Send a plain text message. Called from api_prd.py alert/telegram route."""
+    token = None
+    if settings:
+        token = getattr(settings, 'telegram_bot_token', None)
+    if not token:
+        import os
+        token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if not token:
+        log.warning("TELEGRAM_BOT_TOKEN not configured")
         return False
+    return _send_via_api(token, chat_id, message)
 
-    # Fetch diagnosis from SQLite
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute(
-        """
-        SELECT primary_disease, confidence, severity, reasoning,
-               treatment_json, economic_loss_json, heatmap_image_b64
-        FROM diagnoses WHERE diagnosis_id = ?
-        """,
-        (detection_id,),
-    )
-    row = cur.fetchone()
-    conn.close()
 
-    if not row:
-        log.warning("Detection %s not found in SQLite", detection_id)
+def send_telegram_alert(*, chat_id: str, message: str) -> bool:
+    """Send a plain text alert (for outbreak/pond-critical alerts)."""
+    import os
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if not token:
+        return False
+    return _send_via_api(token, chat_id, message)
+
+
+def send_telegram_report(*, chat_id: str, detection_id: str) -> bool:
+    """Build and send the full PRD-format diagnosis report to Telegram."""
+    import json
+    import os
+
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if not token:
+        log.warning("TELEGRAM_BOT_TOKEN not configured")
         return False
 
     try:
-        treatment = json.loads(row["treatment_json"] or "{}")
-        economic = json.loads(row["economic_loss_json"] or "null")
+        from db.sqlite import get_conn
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT primary_disease, confidence, severity, reasoning,
+                   treatment_json, economic_loss_json
+            FROM diagnoses WHERE diagnosis_id = ?
+            """,
+            (detection_id,),
+        )
+        row = cur.fetchone()
+        conn.close()
 
-        # Severity emoji
+        if not row:
+            log.warning("Detection %s not found in SQLite", detection_id)
+            return False
+
+        treatment = json.loads(row["treatment_json"] or "{}")
+        economic   = json.loads(row["economic_loss_json"] or "null")
+
         sev_emoji = {"Mild": "🟡", "Moderate": "🟠", "Critical": "🔴"}.get(row["severity"], "⚪")
         confidence_pct = round(float(row["confidence"]) * 100, 1)
 
-        # Treatment summary
         medicines = treatment.get("medicines", [])
         if medicines:
-            if isinstance(medicines[0], dict):
-                med_text = medicines[0].get("name", str(medicines[0]))
-                dosage = medicines[0].get("dosage", "")
-                med_line = f"💊 Treatment: {med_text}\n   Dosage: {dosage}"
-            else:
-                med_line = f"💊 Treatment: {medicines[0]}"
+            m = medicines[0]
+            med_name = m.get("name", str(m)) if isinstance(m, dict) else str(m)
+            med_line = f"💊 Treatment: {med_name}"
         else:
             med_line = "💊 Treatment: Consult aquaculture veterinarian"
 
-        # Economic summary
         econ_line = ""
         if economic:
-            loss14 = economic.get("revenue_loss_day14_inr", 0)
-            cost = economic.get("treatment_cost_inr", 0)
-            saving = economic.get("net_saving_inr", 0)
             econ_line = (
-                f"\n💰 Economic Risk:\n"
-                f"   Loss if untreated (14 days): ₹{loss14:,}\n"
-                f"   Treatment cost: ₹{cost:,}\n"
-                f"   Net saving: ₹{saving:,}"
+                f"\n💰 Economic Risk:"
+                f"\n   Loss if untreated: ₹{economic.get('revenue_loss_day14_inr', 0):,}"
+                f"\n   Treatment cost: ₹{economic.get('treatment_cost_inr', 0):,}"
             )
 
         message = (
@@ -79,51 +88,34 @@ def send_telegram_report(*, chat_id: str, detection_id: str) -> bool:
             f"🦠 Disease: {row['primary_disease']}\n"
             f"📊 Confidence: {confidence_pct}% | Severity: {sev_emoji} {row['severity']}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🔍 Reasoning: {row['reasoning'][:200]}...\n"
-            f"{med_line}"
-            f"{econ_line}\n"
+            f"🔍 {str(row['reasoning'])[:200]}...\n"
+            f"{med_line}{econ_line}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"📋 Diagnosis ID: {detection_id}\n"
-            f"⚠️ Always confirm with a registered aquaculture veterinarian."
+            f"📋 Case: {detection_id}\n"
+            f"⚠️ Confirm with a registered aquaculture veterinarian."
         )
-
-        from telegram import Bot
-        bot = Bot(token=settings.telegram_bot_token)
-
-        # Send heatmap image if available
-        heatmap_b64 = row.get("heatmap_image_b64")
-        if heatmap_b64:
-            try:
-                import base64
-                import io
-                img_bytes = base64.b64decode(heatmap_b64)
-                bot.send_photo(
-                    chat_id=chat_id,
-                    photo=io.BytesIO(img_bytes),
-                    caption=f"🗺️ Heatmap — {row['primary_disease']} ({confidence_pct}% confidence)",
-                )
-            except Exception as e:
-                log.warning("Failed to send heatmap: %s", e)
-
-        bot.send_message(chat_id=chat_id, text=message)
-        return True
+        return _send_via_api(token, chat_id, message)
 
     except Exception as e:
         log.error("Telegram send_report failed: %s", e)
         return False
 
 
-def send_telegram_alert(*, chat_id: str, message: str) -> bool:
-    """Send a plain text alert message (for outbreak/pond-critical alerts)."""
-    from services.settings import Settings
-    settings = Settings.from_env()
-    if not settings.telegram_bot_token:
-        return False
+def _send_via_api(token: str, chat_id: str, message: str) -> bool:
+    """Direct Telegram Bot API call — no python-telegram-bot library needed."""
     try:
-        from telegram import Bot
-        bot = Bot(token=settings.telegram_bot_token)
-        bot.send_message(chat_id=chat_id, text=message)
-        return True
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        resp = requests.post(
+            url,
+            json={"chat_id": str(chat_id), "text": message, "parse_mode": ""},
+            timeout=10,
+        )
+        data = resp.json()
+        if data.get("ok"):
+            log.info("Telegram message sent to chat_id=%s", chat_id)
+            return True
+        log.warning("Telegram API error: %s", data.get("description"))
+        return False
     except Exception as e:
-        log.error("Telegram alert failed: %s", e)
+        log.error("Telegram HTTP call failed: %s", e)
         return False

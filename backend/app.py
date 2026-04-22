@@ -17,6 +17,7 @@ from routes.outbreak import outbreak_bp
 from routes.similarity import similarity_bp
 from routes.translate import translate_bp
 from routes.telegram import telegram_bp
+from routes.webhook_telegram import webhook_telegram_bp
 from routes.api_prd import api_bp, limiter
 
 
@@ -29,12 +30,14 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config["JSON_SORT_KEYS"] = False
 
+    # CORS
     cors_origins = settings.cors_origins
     if cors_origins:
         CORS(app, origins=cors_origins)
     else:
         CORS(app)
 
+    # v1 blueprints (feature-level routes)
     app.register_blueprint(auth_bp, url_prefix="/api/v1")
     app.register_blueprint(detect_bp, url_prefix="/api/v1")
     app.register_blueprint(explain_bp, url_prefix="/api/v1")
@@ -46,23 +49,25 @@ def create_app() -> Flask:
     app.register_blueprint(translate_bp, url_prefix="/api/v1")
     app.register_blueprint(telegram_bp, url_prefix="/api/v1")
 
-    # FishAI_PRD-compatible API surface
+    # PRD-compatible primary API surface
     app.register_blueprint(api_bp, url_prefix="/api")
     limiter.init_app(app)
 
+    # Telegram webhook (no auth prefix — Telegram calls this directly)
+    app.register_blueprint(webhook_telegram_bp)
+
     @app.get("/health")
     def health():
-        return jsonify(
-            {
-                "status": "ok",
-                "time": datetime.now(timezone.utc).isoformat(),
-                "authMode": settings.auth_mode,
-            }
-        )
+        return jsonify({
+            "status": "ok",
+            "time": datetime.now(timezone.utc).isoformat(),
+            "authMode": settings.auth_mode,
+            "modelPath": settings.mobilenet_model_path or "models/mobilenet_fish.pt",
+        })
 
     @app.errorhandler(404)
     def not_found(_):
-        return jsonify({"error": "Not found"}), 404
+        return jsonify({"error": "Not found", "code": "NOT_FOUND"}), 404
 
     @app.errorhandler(500)
     def internal_error(e):
@@ -76,4 +81,3 @@ app = create_app()
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5000"))
     app.run(host="0.0.0.0", port=port, debug=False)
-

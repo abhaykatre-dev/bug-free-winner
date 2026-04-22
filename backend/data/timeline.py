@@ -1,70 +1,448 @@
+"""
+Disease-specific day-wise action timeline generator.
+Aligned with FishAI_PRD.md FR-10: Day 1–14, morning/evening/observation/escalation.
+"""
 from __future__ import annotations
 
 
-def generate_action_timeline(
-    *, disease: str, severity: str, pond_size_m2: float | None
-) -> list[dict]:
-    # A simple robust template that works even without pond sizing.
-    size_factor = 1.0
-    if pond_size_m2 and pond_size_m2 > 0:
-        size_factor = pond_size_m2 / 100.0
-
-    def dose(base: str) -> str:
-        if "ppm" in base or "mg/L" in base:
-            return base
-        return base
-
-    # Keep the contract stable with day keys used in PRD.
-    return [
+# Baseline day plans per disease (Day 0, 1, 3, 7, 14)
+_DISEASE_TIMELINES: dict[str, list[dict]] = {
+    "Bacterial Red Disease": [
         {
             "day": 0,
-            "title": "Immediate actions",
-            "tasks": ["Isolate visibly sick fish (if possible)", "Stop overfeeding", "Increase aeration"],
-            "medicine": "None",
+            "title": "Immediate response",
+            "morning": "Isolate visibly infected fish into a separate aerated tank.",
+            "evening": "Measure DO, ammonia, pH. Increase aeration across pond.",
+            "medicine": "None yet — prepare Oxytetracycline or KMnO₄ solution",
             "dosage": None,
-            "waterCheck": "Check dissolved oxygen, ammonia, pH",
-            "observationNote": "Take photos; re-scan after 24 hours",
-            "escalationTrigger": "If sudden deaths or rapid spread → consult expert",
+            "water_check": "DO ≥5 mg/L, Ammonia <0.05 mg/L, pH 6.5–8.0",
+            "observation_note": "Count visible red hemorrhagic spots. Take photo for re-scan.",
+            "escalation_trigger": "If >5% fish showing symptoms → escalate to expert.",
         },
         {
             "day": 1,
             "title": "Start treatment",
-            "tasks": ["Begin disease-specific treatment", "Partial water change (20–30%)"],
-            "medicine": f"Treatment for {disease}",
-            "dosage": dose(f"Scale factor ~{size_factor:.2f}× (pond size / 100m²)"),
-            "waterCheck": "Maintain stable temperature and oxygen",
-            "observationNote": f"Severity: {severity}. Monitor appetite and swimming behavior.",
-            "escalationTrigger": "If symptoms worsen by Day 3 → consult expert",
+            "morning": "Apply Oxytetracycline bath (50 mg/L for 1 hour) in isolation tank.",
+            "evening": "30% partial water change in main pond. Re-aerate.",
+            "medicine": "Oxytetracycline",
+            "dosage": "50 mg/L bath for 1 hour; 55 mg/kg in feed if pond-wide treatment needed",
+            "water_check": "Confirm ammonia dropping; target <0.02 mg/L",
+            "observation_note": "Watch for fish in distress after treatment (gasping, erratic swimming).",
+            "escalation_trigger": "If mortality >2% on Day 1 → call vet immediately.",
         },
         {
             "day": 3,
-            "title": "Re-assess and repeat",
-            "tasks": ["Repeat treatment if indicated", "Remove dead fish promptly"],
-            "medicine": f"Treatment for {disease}",
-            "dosage": None,
-            "waterCheck": "Re-check ammonia and nitrite",
-            "observationNote": "Re-scan a representative fish image",
-            "escalationTrigger": "If confidence stays low or deaths increase → consult expert",
+            "title": "Repeat treatment",
+            "morning": "Repeat Oxytetracycline bath or KMnO₄ (2 ppm for 30 min).",
+            "evening": "Another 20% water change. Feed medicated feed if applicable.",
+            "medicine": "Oxytetracycline or KMnO₄",
+            "dosage": "KMnO₄: 2 ppm for 30 min",
+            "water_check": "Recheck ammonia and nitrite.",
+            "observation_note": "Re-scan a fish photo to track disease progression.",
+            "escalation_trigger": "If symptoms spreading or worsening → consult vet for prescription antibiotics.",
         },
         {
             "day": 7,
-            "title": "Stabilize and prevent recurrence",
-            "tasks": ["Improve biosecurity", "Quarantine new stock", "Optimize feeding"],
-            "medicine": "Preventive steps",
-            "dosage": None,
-            "waterCheck": "Weekly water quality checklist",
-            "observationNote": "Continue monitoring for 1 week",
-            "escalationTrigger": "If repeated detections → consider outbreak protocol",
+            "title": "Stabilize and assess",
+            "morning": "Reduce treatment frequency. Observe fish behavior and appetite.",
+            "evening": "Comprehensive water quality test. Adjust feeding to 70% normal rate.",
+            "medicine": "Preventive salt bath if secondary infection suspected",
+            "dosage": "Salt: 3 g/L for 10 min",
+            "water_check": "pH, DO, ammonia, nitrite — full panel",
+            "observation_note": "Hemorrhagic spots should be visibly reduced by Day 7.",
+            "escalation_trigger": "If no improvement → lab culture to confirm antibiotic sensitivity.",
         },
         {
             "day": 14,
             "title": "Recovery check",
-            "tasks": ["Final health check", "Document changes in pond management"],
+            "morning": "Final health assessment — photograph fish for before/after comparison.",
+            "evening": "Document final water quality baseline.",
+            "medicine": "None — discontinue antibiotics",
+            "dosage": None,
+            "water_check": "Record baseline: pH, DO, temperature, ammonia",
+            "observation_note": "If fully resolved, resume normal feeding and stocking management.",
+            "escalation_trigger": "If unresolved → schedule expert farm visit.",
+        },
+    ],
+
+    "Bacterial Gill Disease": [
+        {
+            "day": 0,
+            "title": "Emergency aeration",
+            "morning": "Install emergency aerators — gill disease kills when DO drops. Collect gill tissue for inspection.",
+            "evening": "Measure DO every 2 hours. Stop feeding immediately.",
+            "medicine": "None — stabilize oxygen first",
+            "dosage": None,
+            "water_check": "DO every 2 hours — must be ≥5 mg/L. Ammonia and turbidity.",
+            "observation_note": "Count fish gasping at surface. Inspect gills — pale/dark brown = severe.",
+            "escalation_trigger": "If >10% fish gasping at surface → emergency aeration + vet call.",
+        },
+        {
+            "day": 1,
+            "title": "Antibiotic treatment",
+            "morning": "Medicated feed with Oxytetracycline (55 mg/kg body weight).",
+            "evening": "30% water change using clean water. Continue aeration.",
+            "medicine": "Oxytetracycline",
+            "dosage": "55 mg/kg body weight in feed for 10 days",
+            "water_check": "DO ≥5 mg/L, reduce organic load",
+            "observation_note": "Feeding response indicates recovery — fish that eat are recovering.",
+            "escalation_trigger": "If fish refuse medicated feed → consult vet for bath treatment alternative.",
+        },
+        {
+            "day": 3,
+            "title": "Continue treatment",
+            "morning": "Continue medicated feed. Remove dead fish and organic debris.",
+            "evening": "Inspect gills — look for pinkening as recovery sign.",
+            "medicine": "Oxytetracycline (continue)",
+            "dosage": "55 mg/kg body weight",
+            "water_check": "Ammonia, DO",
+            "observation_note": "Gill colour should be brightening from pale toward normal pink.",
+            "escalation_trigger": "No improvement in 3 days → vet visit for possible Benzalkonium Chloride treatment.",
+        },
+        {
+            "day": 7,
+            "title": "Assess and adjust",
+            "morning": "Inspect gills visually. Resume partial feeding (50% normal).",
+            "evening": "Final medicated feed dose if still on 10-day course.",
+            "medicine": "Continue antibiotic course if prescribed",
+            "dosage": "As prescribed",
+            "water_check": "Full panel — pH, DO, ammonia, nitrite",
+            "observation_note": "Fish should be actively swimming and seeking food.",
+            "escalation_trigger": "Persistent gill discoloration → expert gill biopsy.",
+        },
+        {
+            "day": 14,
+            "title": "Recovery and prevention",
+            "morning": "Final health check — gills should appear pink and moist.",
+            "evening": "Resume full feeding. Add probiotics to feed if available.",
             "medicine": "None",
             "dosage": None,
-            "waterCheck": "Record baseline values (pH, O2, ammonia, temp)",
-            "observationNote": "If unresolved → schedule expert review",
-            "escalationTrigger": "Persistent symptoms → expert escalation",
+            "water_check": "Record baseline water quality parameters",
+            "observation_note": "Document management changes to prevent recurrence.",
+            "escalation_trigger": "Recurrence within 30 days → structural pond management review needed.",
+        },
+    ],
+
+    "Bacterial Diseases – Aeromoniasis": [
+        {
+            "day": 0,
+            "title": "ISOLATE IMMEDIATELY",
+            "morning": "Remove ALL infected fish to isolation tank NOW. Call district fisheries officer.",
+            "evening": "Disinfect pond equipment with 200 ppm chlorine. Do NOT share any tools.",
+            "medicine": "Salt + KMnO₄ (interim disinfection only)",
+            "dosage": "Salt: 5 g/L + KMnO₄: 2 ppm for 30 min",
+            "water_check": "Ammonia (must be <0.05 mg/L), DO (≥6 mg/L), pH",
+            "observation_note": "Photograph ulcers. Count affected fish. Report to fisheries authority if mortality >5%.",
+            "escalation_trigger": "MANDATORY: Call vet today. This disease requires prescription antibiotics.",
+        },
+        {
+            "day": 1,
+            "title": "Prescription antibiotic treatment",
+            "morning": "Begin Florfenicol (10 mg/kg/day) in feed — vet prescribed only.",
+            "evening": "40% water change in main pond. Reduce stocking density if possible.",
+            "medicine": "Florfenicol (prescription)",
+            "dosage": "10 mg/kg body weight per day in medicated feed for 10 days",
+            "water_check": "DO, ammonia every 6 hours in isolation tank",
+            "observation_note": "Expect continued mortality for 48–72 hours — antibiotic takes time to work.",
+            "escalation_trigger": "Mortality >15% on Day 1 → cull severely affected fish to prevent spread.",
+        },
+        {
+            "day": 3,
+            "title": "Assess treatment response",
+            "morning": "Continue medicated feed. Inspect ulcers — look for granulation (healing tissue).",
+            "evening": "Second water change in main pond. Disinfect isolation equipment.",
+            "medicine": "Florfenicol (continue)",
+            "dosage": "10 mg/kg/day",
+            "water_check": "Full water quality panel",
+            "observation_note": "Mortality rate should be declining. Ulcer margins should show healing.",
+            "escalation_trigger": "No mortality reduction → change antibiotic per vet sensitivity test results.",
+        },
+        {
+            "day": 7,
+            "title": "Transition and biosecurity",
+            "morning": "Reduce antibiotic dose as directed by vet. Assess main pond health.",
+            "evening": "Lime treatment of main pond (25 kg/1000 m²) as disinfection.",
+            "medicine": "Antibiotics (reducing per vet instructions)",
+            "dosage": "As directed",
+            "water_check": "Ammonia, DO, pH after lime treatment",
+            "observation_note": "Begin planning restocking strategy with vet guidance.",
+            "escalation_trigger": "Any new pond showing similar symptoms → treat as outbreak. Notify authorities.",
+        },
+        {
+            "day": 14,
+            "title": "Biosecurity review",
+            "morning": "Final health check. Complete antibiotic course withdrawal period.",
+            "evening": "Document outbreak timeline and management actions for records.",
+            "medicine": "None — observe antibiotic withdrawal period before harvest",
+            "dosage": None,
+            "water_check": "Full panel — establish new baseline",
+            "observation_note": "Do not harvest fish within antibiotic withdrawal period (typically 30 days for Florfenicol).",
+            "escalation_trigger": "Any recurrence → full biosecurity audit of hatchery and water source.",
+        },
+    ],
+
+    "Fungal Diseases – Saprolegniasis": [
+        {
+            "day": 0,
+            "title": "Remove infection sources",
+            "morning": "Remove all dead fish and organic debris from pond immediately.",
+            "evening": "Salt bath for affected fish: 5 g/L for 15 minutes.",
+            "medicine": "Salt (NaCl)",
+            "dosage": "5 g/L bath for 15 minutes, or 3 g/L indefinite pond treatment",
+            "water_check": "Water temperature (target >20°C), organic load, DO",
+            "observation_note": "Photograph cotton-wool patches. Note distribution (isolated or widespread).",
+            "escalation_trigger": "If majority of stock affected → KMnO₄ pond treatment urgently.",
+        },
+        {
+            "day": 1,
+            "title": "Antifungal treatment",
+            "morning": "KMnO₄ pond treatment: 2 ppm for 30 minutes with active aeration.",
+            "evening": "Remove remaining dead matter. Do NOT add uneaten feed.",
+            "medicine": "Potassium Permanganate (KMnO₄)",
+            "dosage": "2 ppm for 30 minutes; repeat every 3 days",
+            "water_check": "DO ≥5 mg/L, organic load reduction",
+            "observation_note": "KMnO₄ will turn pond purple-pink — normal. Turns brown when consumed.",
+            "escalation_trigger": "If gills affected → consult vet (gill Saprolegniasis is more serious).",
+        },
+        {
+            "day": 3,
+            "title": "Repeat and monitor",
+            "morning": "Repeat KMnO₄ (2 ppm for 30 min).",
+            "evening": "Salt addition to maintain 1–2 g/L in pond as prophylaxis.",
+            "medicine": "KMnO₄ + ongoing salt",
+            "dosage": "KMnO₄: 2 ppm; Salt: maintain 1–2 g/L pond concentration",
+            "water_check": "Temperature, DO, turbidity",
+            "observation_note": "Cotton-wool patches should be shrinking or absent by Day 3.",
+            "escalation_trigger": "Lesions spreading to previously unaffected fish → vet consultation.",
+        },
+        {
+            "day": 7,
+            "title": "Resolution check",
+            "morning": "Inspect fish — cotton-wool patches should be resolved.",
+            "evening": "Resume normal feeding. Maintain good aeration.",
+            "medicine": "None if resolved",
+            "dosage": None,
+            "water_check": "Full panel",
+            "observation_note": "Healing tissue may look slightly discolored — this is normal.",
+            "escalation_trigger": "Persistent patches → Malachite Green treatment (check local regulations first).",
+        },
+        {
+            "day": 14,
+            "title": "Prevention focus",
+            "morning": "Final inspection. Plan handling procedure improvements.",
+            "evening": "Record lessons learned.",
+            "medicine": "None",
+            "dosage": None,
+            "water_check": "Record baseline",
+            "observation_note": "Saprolegnia recurrence is preventable with good pond hygiene.",
+            "escalation_trigger": "Recurrence → review handling practices and water source quality.",
+        },
+    ],
+
+    "Parasitic Diseases": [
+        {
+            "day": 0,
+            "title": "Parasite identification",
+            "morning": "Observe fish for flashing, rubbing, spots. Identify parasite type if possible.",
+            "evening": "Salt bath for affected fish: 3–5 g/L for 10 minutes.",
+            "medicine": "Salt (NaCl)",
+            "dosage": "3–5 g/L bath for 10 minutes",
+            "water_check": "pH (target 7.0–8.0 for treatments to work), temperature, DO",
+            "observation_note": "White spots = Ich. Mucus + rubbing = Trichodina. Visible crustaceans = Argulus.",
+            "escalation_trigger": "Mass mortality beginning → Formalin treatment urgently.",
+        },
+        {
+            "day": 1,
+            "title": "Targeted treatment",
+            "morning": "Formalin treatment (25–50 ppm for 1 hour with heavy aeration) for Ich/Trichodina.",
+            "evening": "Re-aerate thoroughly after Formalin. Do NOT leave fish unobserved during treatment.",
+            "medicine": "Formalin (37% formaldehyde)",
+            "dosage": "25–50 ppm for 1 hour (lower dose in warm water); or Malachite Green 0.1 mg/L + Formalin 25 ppm",
+            "water_check": "DO must be maintained during Formalin treatment — fish can suffocate",
+            "observation_note": "Formalin stress is normal — fish may briefly surface. Monitor closely.",
+            "escalation_trigger": "Fish deaths during Formalin → reduce dose and increase aeration immediately.",
+        },
+        {
+            "day": 3,
+            "title": "Second treatment cycle",
+            "morning": "Repeat Formalin treatment (Ich lifecycle demands multiple treatments).",
+            "evening": "Quarantine new fish arrivals from now on.",
+            "medicine": "Formalin (repeat)",
+            "dosage": "25 ppm for 1 hour",
+            "water_check": "Temperature (higher temperature speeds up Ich lifecycle — more frequent treatment needed)",
+            "observation_note": "Ich spots may initially increase as tomonts burst — this is normal on Day 3.",
+            "escalation_trigger": "If lice (Argulus) visible → switch to Diflubenzuron (vet prescription).",
+        },
+        {
+            "day": 7,
+            "title": "Resolution and prevention",
+            "morning": "Third Formalin treatment if Ich still visible. Inspect for Argulus.",
+            "evening": "Salt maintenance dose: 1–2 g/L pond.",
+            "medicine": "Formalin (if needed) or Diflubenzuron for Argulus",
+            "dosage": "Diflubenzuron: 0.03 ppm; repeat after 7 days",
+            "water_check": "Full panel",
+            "observation_note": "Ich should be resolved by Day 7 with 3× Formalin treatment.",
+            "escalation_trigger": "No resolution → skin scrape for microscopy to confirm parasite species.",
+        },
+        {
+            "day": 14,
+            "title": "Biosecurity reinforcement",
+            "morning": "Final health check. Implement 14-day quarantine protocol for all future stock.",
+            "evening": "Record treatment and outcomes.",
+            "medicine": "None",
+            "dosage": None,
+            "water_check": "Record baseline",
+            "observation_note": "Prophylactic salt (1 g/L) can be maintained long-term for carp species.",
+            "escalation_trigger": "Recurrence → source of introduction must be identified.",
+        },
+    ],
+
+    "Viral Diseases – White Tail Disease": [
+        {
+            "day": 0,
+            "title": "EMERGENCY ISOLATION — no cure exists",
+            "morning": "Immediately cull or isolate all fish showing white tail symptoms. No antiviral exists.",
+            "evening": "Disinfect all equipment. Notify district fisheries authority TODAY.",
+            "medicine": "Salt (for secondary infection only)",
+            "dosage": "Salt: 3 g/L bath for 10 min for secondary bacterial infection",
+            "water_check": "DO ≥6 mg/L, Ammonia <0.05 mg/L — reduce all stressors",
+            "observation_note": "Document mortality count. White/opaque tail + erratic swimming = WTD.",
+            "escalation_trigger": "MANDATORY: Report to state fisheries department — WTD is notifiable.",
+        },
+        {
+            "day": 1,
+            "title": "Secondary infection management",
+            "morning": "Oxytetracycline for secondary bacterial infections (50 mg/L bath 1 hr).",
+            "evening": "Remove and incinerate/bury dead fish — do NOT return to water.",
+            "medicine": "Oxytetracycline (secondary infections only)",
+            "dosage": "50 mg/L bath for 1 hour",
+            "water_check": "DO every 4 hours — stressed fish deplete oxygen faster",
+            "observation_note": "Mortality will be high — focus on preventing spread to unaffected ponds.",
+            "escalation_trigger": "Adjacent ponds showing symptoms → emergency disinfection of all shared water.",
+        },
+        {
+            "day": 3,
+            "title": "Containment and pond assessment",
+            "morning": "Assess remaining stock — cull severely affected fish. Maintain healthy survivors.",
+            "evening": "Lime treatment around pond perimeter as barrier disinfection.",
+            "medicine": "Lime (CaO) for perimeter disinfection",
+            "dosage": "25 kg/1000 m² around pond edges",
+            "water_check": "pH may rise after lime — test and wait 48 hrs before restocking",
+            "observation_note": "Survivors with no symptoms may be resistant — mark for selective breeding.",
+            "escalation_trigger": "Spread to adjacent ponds → formal outbreak declaration with authorities.",
+        },
+        {
+            "day": 7,
+            "title": "Pond disinfection",
+            "morning": "Drain and disinfect pond if majority of stock lost. Lime entire pond bottom.",
+            "evening": "Rest pond for minimum 2 weeks before restocking.",
+            "medicine": "Lime (CaO) for pond bottom disinfection",
+            "dosage": "100–150 kg/1000 m² for dry pond bottom",
+            "water_check": "Pre-restocking water quality assessment",
+            "observation_note": "Do not restock from same hatchery without PCR testing for WTD.",
+            "escalation_trigger": "Recurrence → source tracing mandatory (water source, hatchery).",
+        },
+        {
+            "day": 14,
+            "title": "Restocking decision",
+            "morning": "Water quality should be fully restored after pond rest.",
+            "evening": "Plan restocking with certified disease-free stock from tested hatchery.",
+            "medicine": "None",
+            "dosage": None,
+            "water_check": "Full panel before restocking",
+            "observation_note": "Maintain strict biosecurity for minimum 3 months after outbreak.",
+            "escalation_trigger": "Any new stock showing symptoms → do not restock this pond.",
+        },
+    ],
+}
+
+
+def generate_action_timeline(
+    *,
+    disease: str,
+    severity: str,
+    pond_size_m2: float | None,
+) -> list[dict]:
+    """
+    Return day-wise action timeline for a disease.
+    Falls back to generic template for unknown diseases.
+    """
+    plan = _DISEASE_TIMELINES.get(disease)
+    if plan is None:
+        return _generic_timeline(disease, severity)
+
+    # Adjust dosage scaling hint for large ponds
+    size_note = ""
+    if pond_size_m2 and pond_size_m2 > 0:
+        size_factor = pond_size_m2 / 100.0
+        size_note = f" (Scale factor ×{size_factor:.1f} for {pond_size_m2:.0f} m² pond)"
+
+    result = []
+    for day_plan in plan:
+        entry = dict(day_plan)
+        if entry.get("dosage") and size_note:
+            entry["dosage"] = entry["dosage"] + size_note
+        result.append(entry)
+
+    return result
+
+
+def _generic_timeline(disease: str, severity: str) -> list[dict]:
+    """Fallback generic timeline used when disease not in knowledge base."""
+    return [
+        {
+            "day": 0,
+            "title": "Immediate actions",
+            "morning": "Isolate visibly sick fish. Increase aeration. Stop overfeeding.",
+            "evening": "Measure dissolved oxygen, ammonia, and pH.",
+            "medicine": "None",
+            "dosage": None,
+            "water_check": "DO ≥5 mg/L, Ammonia <0.05 mg/L, pH 6.5–8.0",
+            "observation_note": f"Severity: {severity}. Take photo for re-scan after 24 hours.",
+            "escalation_trigger": "Sudden deaths or rapid spread → consult expert immediately.",
+        },
+        {
+            "day": 1,
+            "title": "Start treatment",
+            "morning": f"Begin appropriate treatment for {disease}.",
+            "evening": "20–30% partial water change. Re-aerate.",
+            "medicine": f"Treatment for {disease}",
+            "dosage": "Consult knowledge base or vet for exact dosage",
+            "water_check": "DO, ammonia, temperature",
+            "observation_note": "Monitor feeding response and swimming behavior.",
+            "escalation_trigger": "Worsening symptoms by Day 3 → consult aquaculture veterinarian.",
+        },
+        {
+            "day": 3,
+            "title": "Re-assess",
+            "morning": "Repeat treatment if indicated. Remove dead fish promptly.",
+            "evening": "Recheck ammonia and nitrite.",
+            "medicine": "Continue treatment",
+            "dosage": None,
+            "water_check": "Ammonia, nitrite, DO",
+            "observation_note": "Re-scan a representative fish image for comparison.",
+            "escalation_trigger": "No improvement → lab diagnosis recommended.",
+        },
+        {
+            "day": 7,
+            "title": "Stabilize",
+            "morning": "Improve biosecurity. Quarantine new stock.",
+            "evening": "Weekly water quality checklist.",
+            "medicine": "Preventive steps as applicable",
+            "dosage": None,
+            "water_check": "Full panel",
+            "observation_note": "Continue monitoring for 1 additional week.",
+            "escalation_trigger": "Repeated detections → outbreak protocol.",
+        },
+        {
+            "day": 14,
+            "title": "Recovery check",
+            "morning": "Final health check. Document management changes.",
+            "evening": "Record baseline water quality values.",
+            "medicine": "None",
+            "dosage": None,
+            "water_check": "pH, DO, ammonia, temperature baseline",
+            "observation_note": "If unresolved → schedule expert farm visit.",
+            "escalation_trigger": "Persistent symptoms → expert escalation.",
         },
     ]
-

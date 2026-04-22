@@ -1,0 +1,120 @@
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.container { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 1rem;
+}
+.backBtn {
+  width: 38px; height: 38px; border-radius: var(--radius-md);
+  border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary); background: white; cursor: pointer; transition: all .2s;
+}
+.backBtn:hover { background: var(--bg-primary); }
+.caseId { font-size: .68rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.title  { font-size: 1.35rem; font-weight: 700; color: var(--brand-secondary); }
+
+.mainGrid { display: grid; grid-template-columns: 3fr 2fr; gap: 1.5rem; }
+.leftCol  { display: flex; flex-direction: column; gap: 1.25rem; }
+.rightCol { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* ── Image Viewer ─────────────────────────────────────────────────────────── */
+.imageViewer {
+  position: relative; border-radius: var(--radius-lg); overflow: hidden;
+  background: #0f172a; min-height: 320px; display: flex; align-items: center;
+  justify-content: center; box-shadow: var(--shadow-lg);
+}
+.baseImage       { width: 100%; height: auto; display: block; }
+.heatmapOverlay  { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .65; mix-blend-mode: screen; pointer-events: none; }
+.imageOverlayBadge {
+  position: absolute; top: 1rem; left: 1rem;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(6px);
+  padding: .6rem .9rem; border-radius: var(--radius-md); min-width: 180px;
+}
+.heatmapLegend {
+  position: absolute; bottom: 1rem; right: 1rem;
+  display: flex; align-items: center; gap: .4rem;
+  background: rgba(0,0,0,.5); padding: .35rem .7rem; border-radius: 99px;
+}
+.legendBar { width: 72px; height: 7px; border-radius: 4px; background: linear-gradient(to right, #3B82F6, #22C55E, #EAB308, #EF4444); }
+
+/* ── Confidence Card ─────────────────────────────────────────────────────── */
+.confidenceCard { padding: 1.25rem; }
+.metaBadge { font-size: .72rem; background: var(--bg-primary); border-radius: 99px; padding: .25rem .7rem; color: var(--text-secondary); font-weight: 500; }
+.metaTranslated { background: #CCFBF1; color: var(--brand-primary); }
+
+/* ── Timeline ─────────────────────────────────────────────────────────────── */
+.timelineCard { padding: 1.25rem; }
+.durationBadge { background: #A5F3FC; color: #0891B2; padding: .2rem .7rem; border-radius: 99px; font-size: .72rem; font-weight: 700; }
+.timelineStepper { position: relative; display: flex; justify-content: space-between; margin: 1.5rem 0 1.75rem; }
+.timelineLine    { position: absolute; top: 17px; left: 20px; right: 20px; height: 2px; background: var(--border-color); }
+.step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; width: 80px; }
+.stepIcon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: .5rem; }
+.activeStep  { background: var(--brand-primary); color: white; border: 3px solid #CCFBF1; }
+.pendingStep { border: 2px solid var(--border-color); color: var(--text-secondary); background: white; }
+.stepLabel { font-size: .7rem; font-weight: 700; color: var(--text-primary); margin-bottom: .1rem; text-align: center; }
+.stepTitle { font-size: .68rem; color: var(--text-secondary); text-align: center; }
+.infoAlert { background: #F0FDFA; border: 1px solid #CCFBF1; border-radius: var(--radius-md); padding: .9rem; display: flex; gap: .7rem; align-items: flex-start; }
+.infoAlert p { font-size: .8rem; color: var(--brand-primary); line-height: 1.5; margin: 0; }
+
+/* ── Economic ─────────────────────────────────────────────────────────────── */
+.economicCard { padding: 1.25rem; }
+.ecoInputGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+.ecoInputGroup { display: flex; flex-direction: column; gap: .35rem; }
+.ecoInputGroup label { font-size: .78rem; font-weight: 600; color: var(--text-primary); }
+.ecoInput { padding: .55rem .75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: .9rem; outline: none; background: #F8FAFC; }
+.ecoInput:focus { border-color: var(--brand-primary); }
+.ecoResultGrid { display: grid; grid-template-columns: repeat(3,1fr); gap: .75rem; }
+.ecoStat { padding: .9rem; border-radius: var(--radius-md); }
+.ecoLoss      { background: #FEF2F2; border-left: 3px solid var(--danger); }
+.ecoTreatment { background: #FFFBEB; border-left: 3px solid var(--warning); }
+.ecoSavings   { background: #F0FDF4; border-left: 3px solid var(--success); }
+.ecoStatLabel { font-size: .65rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: .35rem; letter-spacing: .04em; }
+.ecoStatValue { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+.ecoStatNote  { font-size: .68rem; color: var(--text-secondary); margin-top: .2rem; }
+
+/* ── Summary ──────────────────────────────────────────────────────────────── */
+.summaryCard { padding: 1.25rem; }
+.severitySection { margin-bottom: 1.1rem; }
+.severityBar { height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
+.severityFill { height: 100%; border-radius: 3px; transition: width .5s; }
+.obsBox { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: .85rem; margin-bottom: .75rem; }
+.obsLabel { font-size: .65rem; font-weight: 700; color: var(--brand-primary); letter-spacing: .05em; margin-bottom: .35rem; text-transform: uppercase; }
+.obsText  { font-size: .8rem; color: var(--text-primary); line-height: 1.55; margin: 0; }
+
+/* ── Meds ─────────────────────────────────────────────────────────────────── */
+.medsCard { padding: 1.25rem; }
+.medBox { border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: .85rem; display: flex; gap: .85rem; align-items: center; margin-bottom: 1rem; background: #F8FAFC; }
+.medIconBox { width: 40px; height: 40px; background: #CCFBF1; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
+.medRow { display: flex; justify-content: space-between; padding: .65rem 0; border-bottom: 1px solid var(--border-color); font-size: .82rem; color: var(--text-secondary); }
+.medValue { font-weight: 600; color: var(--brand-primary); }
+.orderBtn { width: 100%; margin-top: 1rem; background: #F0FDFA; color: var(--brand-primary); font-weight: 600; }
+.orderBtn:hover { background: #CCFBF1; }
+
+/* ── Vet Card ─────────────────────────────────────────────────────────────── */
+.vetCard { padding: 1.25rem; border-left: 3px solid var(--brand-primary); }
+.vetHighlight { background: linear-gradient(135deg, #F0FDFA, #E0F7FA); border-radius: var(--radius-md); padding: .9rem; margin-bottom: .5rem; }
+
+/* ── Similar ──────────────────────────────────────────────────────────────── */
+.similarCard { padding: 1.25rem; }
+.similarRow { display: flex; align-items: center; gap: .7rem; padding: .65rem 0; border-bottom: 1px solid var(--border-color); }
+.similarThumb { width: 34px; height: 34px; background: #E0F2FE; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+/* ── Modal ────────────────────────────────────────────────────────────────── */
+.modalOverlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.modal { width: 100%; max-width: 400px; position: relative; padding: 2rem; }
+.closeBtn { position: absolute; top: 1rem; right: 1rem; font-size: .9rem; cursor: pointer; background: none; border: none; color: var(--text-secondary); }
+.closeBtn:hover { color: var(--text-primary); }
+.inputGroup { display: flex; flex-direction: column; gap: .4rem; }
+.inputGroup label { font-size: .82rem; font-weight: 500; color: var(--text-primary); }
+.input { padding: .6rem .85rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: .875rem; outline: none; width: 100%; }
+.input:focus { border-color: var(--brand-primary); }
+
+/* ── Mobile ───────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .mainGrid { grid-template-columns: 1fr; }
+  .ecoResultGrid { grid-template-columns: 1fr; }
+  .ecoInputGrid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; }
+  .timelineStepper { flex-wrap: wrap; gap: 1rem; }
+}

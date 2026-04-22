@@ -683,3 +683,50 @@ def diagnose_sync():
         results.append({"local_id": local_id, "diagnosis_id": diagnosis_id, "status": "synced"})
 
     return jsonify({"synced": len([r for r in results if r["status"] == "synced"]), "results": results})
+
+
+# --------------------------------------------------------------------------- #
+#  POST /api/alert/sms
+# --------------------------------------------------------------------------- #
+@api_bp.post("/alert/sms")
+@require_auth
+def alert_sms():
+    data = request.get_json(force=True) or {}
+    phone = data.get("phone")
+    message = data.get("message")
+    
+    if not phone or not message:
+        return _error(ApiError(code="INVALID_REQUEST", message="Phone and message are required", http_status=400))
+        
+    from services.sms import send_sms_alert
+    success = send_sms_alert(phone, message)
+    
+    if success:
+        return jsonify({"success": True})
+    else:
+        return _error(ApiError(code="SMS_FAILED", message="Failed to send SMS via Fast2SMS", http_status=500))
+
+
+# --------------------------------------------------------------------------- #
+#  POST /api/alert/telegram
+# --------------------------------------------------------------------------- #
+@api_bp.post("/alert/telegram")
+@require_auth
+def alert_telegram():
+    data = request.get_json(force=True) or {}
+    chat_id = data.get("chat_id")
+    message = data.get("message")
+    
+    if not chat_id or not message:
+        return _error(ApiError(code="INVALID_REQUEST", message="Chat ID and message are required", http_status=400))
+        
+    from services.telegram import send_telegram_message
+    from services.settings import Settings
+    
+    settings = Settings.from_env()
+    success = send_telegram_message(chat_id, message, settings)
+    
+    if success:
+        return jsonify({"success": True})
+    else:
+        return _error(ApiError(code="TELEGRAM_FAILED", message="Failed to send Telegram message", http_status=500))

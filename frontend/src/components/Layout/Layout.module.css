@@ -138,3 +138,12 @@
   color: var(--text-secondary);
   border-top: 1px solid var(--border-color);
 }
+
+@media (max-width: 768px) {
+  .header { padding: 0 1rem; height: auto; flex-wrap: wrap; gap: .5rem; padding: .75rem 1rem; }
+  .nav { gap: 1rem; overflow-x: auto; padding-bottom: .5rem; }
+  .navLink { font-size: .8rem; white-space: nowrap; }
+  .profileInfo { display: none; }
+  .main { padding: 1rem; }
+  .actions { gap: .75rem; }
+}

@@ -1,0 +1,243 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--brand-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.topRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 2fr;
+  gap: 1.5rem;
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.metricLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.metricValue {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--brand-secondary);
+  margin: 1rem 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.textWarning {
+  color: var(--danger);
+}
+
+.metricUnit {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.metricTrend {
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.trendUp { color: var(--brand-primary); }
+.trendNeutral { color: var(--brand-secondary); }
+.trendDown { color: var(--danger); }
+
+/* Queue */
+.queueCard {
+  grid-column: 4;
+  grid-row: span 2; /* Needs layout tweak if rows change, but works for flex/grid mix */
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--brand-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.queueItem {
+  margin-bottom: 1.5rem;
+}
+
+.queueName {
+  font-size: 0.875rem;
+  color: var(--brand-primary);
+  font-weight: 500;
+}
+
+.queueTime {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.queueLoc {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background-color: var(--bg-primary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--text-secondary);
+  border-radius: 3px;
+}
+
+.viewAllBtn {
+  margin-top: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--brand-secondary);
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.viewAllBtn:hover {
+  text-decoration: underline;
+}
+
+/* Bottom Row */
+.bottomRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+.chartCard {
+  background-color: #F8FAFC;
+}
+
+.activityCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.activityItem {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.activityIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bgTeal { background-color: #CCFBF1; }
+.bgBlue { background-color: #E0F2FE; }
+.bgRed { background-color: #FEE2E2; }
+
+.activityTitle {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.activityDesc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin-bottom: 0.25rem;
+}
+
+.activityTime {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* Outbreak Prediction Widget */
+.outbreakCard { padding: 1.5rem; }
+
+.outbreakGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.outbreakZone {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border-left: 4px solid transparent;
+}
+
+.outbreak_critical { background-color: #FEF2F2; border-left-color: var(--danger); }
+.outbreak_warning  { background-color: #FFFBEB; border-left-color: var(--warning); }
+.outbreak_safe     { background-color: #F0FDF4; border-left-color: var(--success); }
+
+.outbreakZoneName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.outbreakBar {
+  height: 8px;
+  background-color: var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.outbreakFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .topRow { grid-template-columns: 1fr 1fr; }
+  .queueCard { grid-column: span 2; }
+  .bottomRow { grid-template-columns: 1fr; }
+  .outbreakGrid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}

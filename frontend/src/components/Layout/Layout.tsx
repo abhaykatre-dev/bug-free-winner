@@ -1,10 +1,18 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { HelpCircle, Settings, ChevronDown, Activity, Map, Languages } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { HelpCircle, Settings, ChevronDown, Activity, Map, Languages, LogOut } from 'lucide-react';
 import clsx from 'clsx';
+import { useAuth } from '../../context/AuthContext';
 import styles from './Layout.module.css';
 
 export const Layout: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
@@ -42,13 +50,16 @@ export const Layout: React.FC = () => {
           </button>
           
           <div className={styles.profile}>
-            <div className={styles.avatar}>RJ</div>
+            <div className={styles.avatar}>{user?.name.charAt(0)}</div>
             <div className={styles.profileInfo}>
               <span className={styles.profileName}>
-                Raju Patil <ChevronDown size={14} className={styles.iconBtn} />
+                {user?.name} 
               </span>
-              <span className={styles.profileRole}>Aqua Farmer</span>
+              <span className={styles.profileRole}>{user?.role}</span>
             </div>
+            <button className={styles.iconBtn} onClick={handleLogout} style={{marginLeft: '0.5rem'}} title="Logout">
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </header>

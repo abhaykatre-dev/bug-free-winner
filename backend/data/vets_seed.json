@@ -1,0 +1,14 @@
+{
+  "vets": [
+    {
+      "name": "Dr. Suresh Patil - Govt. Fisheries Office",
+      "type": "government",
+      "distance_km": null,
+      "phone": "+91-2352-XXXXXX",
+      "hours": "10am–5pm Mon–Sat",
+      "lat": 17.0,
+      "lng": 73.3
+    }
+  ]
+}
+

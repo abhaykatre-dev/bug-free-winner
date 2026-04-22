@@ -1,0 +1,29 @@
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual envs
+.venv/
+.venv_prd/
+venv/
+ENV/
+
+# Packaging / tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+pip-wheel-metadata/
+
+# Local databases / artifacts
+backend/db/*.sqlite3
+backend/db/*.db
+
+# Jupyter
+.ipynb_checkpoints/
+

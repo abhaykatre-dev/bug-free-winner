@@ -1,0 +1,133 @@
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+.page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #0F172A 0%, #0D3B38 50%, #134E4A 100%);
+  padding: 1.5rem; position: relative; overflow: hidden;
+}
+
+/* Decorative background blobs */
+.blob1 {
+  position: absolute; top: -120px; right: -120px;
+  width: 480px; height: 480px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(13,148,136,0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+.blob2 {
+  position: absolute; bottom: -100px; left: -100px;
+  width: 380px; height: 380px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(20,184,166,0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.card {
+  background: rgba(255,255,255,0.97);
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+  position: relative; z-index: 1;
+}
+
+/* ── Brand ─────────────────────────────────────────────────────────────────── */
+.brand { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+.brandIcon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: linear-gradient(135deg, #0D9488, #0F766E);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.brandName {
+  font-size: 1.4rem; font-weight: 800; color: #0F172A; margin: 0;
+  letter-spacing: -0.5px;
+}
+.brandName span { color: var(--brand-primary); }
+.brandTagline { font-size: 0.78rem; color: #64748B; margin: 0.15rem 0 0; }
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+.tabs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: #F1F5F9; border-radius: 10px;
+  padding: 4px; margin-bottom: 1.5rem;
+}
+.tab {
+  padding: 0.6rem; border-radius: 7px; font-size: 0.875rem;
+  font-weight: 500; color: #64748B; background: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.tab:hover { color: var(--brand-primary); }
+.tabActive {
+  background: white; color: var(--brand-primary); font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* ── Google Button ─────────────────────────────────────────────────────────── */
+.googleBtn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  padding: 0.75rem; border: 1.5px solid #E2E8F0; border-radius: 10px;
+  background: white; color: #1E293B; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 1.25rem;
+}
+.googleBtn:hover { border-color: #CBD5E1; background: #F8FAFC; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.googleBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Divider ─────────────────────────────────────────────────────────────────── */
+.divider {
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;
+  color: #94A3B8; font-size: 0.78rem;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+
+/* ── Form ─────────────────────────────────────────────────────────────────── */
+.form { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.inputGroup { position: relative; display: flex; align-items: center; }
+.inputIcon {
+  position: absolute; left: 0.9rem; color: #94A3B8; pointer-events: none;
+  display: flex; align-items: center;
+}
+.input {
+  width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem;
+  border: 1.5px solid #E2E8F0; border-radius: 10px; font-size: 0.875rem;
+  color: #1E293B; background: #F8FAFC; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none; font-family: inherit;
+}
+.input:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(13,148,136,0.12); background: white; }
+.input::placeholder { color: #94A3B8; }
+
+.eyeBtn {
+  position: absolute; right: 0.9rem; color: #94A3B8; background: none;
+  border: none; cursor: pointer; padding: 0.2rem; display: flex;
+}
+.eyeBtn:hover { color: var(--brand-primary); }
+
+.errorBox {
+  background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px;
+  padding: 0.65rem 0.9rem; font-size: 0.8rem; color: #DC2626;
+}
+
+.submitBtn {
+  width: 100%; padding: 0.85rem; border-radius: 10px;
+  background: linear-gradient(135deg, #0D9488, #0F766E);
+  color: white; font-size: 0.95rem; font-weight: 700;
+  border: none; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.submitBtn:hover { background: linear-gradient(135deg, #0F766E, #115E59); box-shadow: 0 4px 15px rgba(13,148,136,0.35); transform: translateY(-1px); }
+.submitBtn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+
+.footNote { text-align: center; font-size: 0.8rem; color: #64748B; margin-top: 1.25rem; margin-bottom: 0; }
+.linkBtn { background: none; border: none; color: var(--brand-primary); font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+.linkBtn:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .card { padding: 1.75rem; }
+}

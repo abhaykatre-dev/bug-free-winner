@@ -1,0 +1,77 @@
+.container { display: flex; flex-direction: column; gap: 1.5rem; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; }
+.title  { font-size: 1.4rem; font-weight: 600; color: var(--brand-secondary); margin-bottom: .3rem; }
+.subtitle { color: var(--text-secondary); font-size: .875rem; max-width: 600px; }
+
+.searchBox { position: relative; width: 320px; }
+.searchIcon { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+.searchInput {
+  width: 100%; padding: .65rem 1rem .65rem 2.75rem; border: 1px solid var(--border-color);
+  border-radius: var(--radius-md); font-size: .875rem; outline: none;
+  transition: border-color .2s; background: white;
+}
+.searchInput:focus { border-color: var(--brand-primary); }
+
+.metricsGrid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
+.metricCard { display: flex; align-items: center; gap: 1.25rem; padding: 1.25rem; }
+.metricIcon { width: 46px; height: 46px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bgBlue { background: #E0F2FE; }
+.bgRed  { background: #FEE2E2; }
+.bgTeal { background: #CCFBF1; }
+.metricLabel { font-size: .8rem; color: var(--text-secondary); font-weight: 500; margin-bottom: .2rem; }
+.metricValue { font-size: 1.35rem; font-weight: 700; color: var(--brand-primary); }
+
+/* Main content layout */
+.mainContent { display: flex; gap: 1.5rem; align-items: flex-start; }
+.pathogenGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.pathogenCard {
+  padding: 0; overflow: hidden; cursor: pointer;
+  transition: all .25s; border: 2px solid transparent;
+}
+.pathogenCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.cardSelected { border-color: var(--brand-primary); box-shadow: 0 0 0 4px #CCFBF1; }
+
+.cardImage {
+  height: 160px; background-size: cover; background-position: center;
+  position: relative; background-color: #0f172a;
+}
+.cardContent { padding: 1rem; }
+.cardTitle { font-size: .95rem; font-weight: 600; color: var(--text-primary); margin-bottom: .4rem; }
+.cardDesc  { font-size: .78rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 1rem; }
+.cardFooter { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.cardStat { display: flex; flex-direction: column; gap: .1rem; }
+.cardStatLabel { font-size: .6rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); letter-spacing: .05em; }
+.cardStatValue { font-size: .8rem; font-weight: 700; color: var(--text-primary); }
+.viewBtn { margin-left: auto; font-size: .78rem; color: var(--brand-primary); font-weight: 600; }
+
+/* Detail Panel */
+.detailPanel {
+  width: 340px; flex-shrink: 0; position: sticky; top: 90px;
+  padding: 0; overflow: hidden; max-height: calc(100vh - 120px); overflow-y: auto;
+}
+.closeDetail { position: absolute; top: 1rem; right: 1rem; z-index: 2; font-size: 1rem; color: white; text-shadow: 0 1px 3px rgba(0,0,0,.6); background: rgba(0,0,0,.3); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.closeDetail:hover { background: rgba(0,0,0,.6); }
+.detailImage { width: 100%; height: 200px; object-fit: cover; display: block; }
+.detailBody { padding: 1.25rem; }
+
+.detailStats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.detailStat { background: var(--bg-primary); border-radius: var(--radius-md); padding: .75rem; text-align: center; }
+.detailStatLabel { font-size: .65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary); letter-spacing: .05em; margin-bottom: .3rem; }
+.detailStatValue { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+@media (max-width: 1024px) {
+  .detailPanel { display: none; }
+}
+
+@media (max-width: 768px) {
+  .metricsGrid { grid-template-columns: repeat(2,1fr); }
+  .pathogenGrid { grid-template-columns: 1fr; }
+  .searchBox { width: 100%; }
+  .header { flex-direction: column; }
+}

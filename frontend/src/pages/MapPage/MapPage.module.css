@@ -1,0 +1,74 @@
+.container { display: flex; flex-direction: column; gap: 1.5rem; height: calc(100vh - 100px); }
+
+.header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; }
+.title  { font-size: 1.4rem; font-weight: 600; color: var(--brand-secondary); margin-bottom: .25rem; }
+.subtitle { color: var(--text-secondary); font-size: .875rem; display: flex; align-items: center; gap: .25rem; }
+
+.filterGroup { display: flex; gap: .5rem; flex-wrap: wrap; }
+.filterBtn {
+  padding: .4rem 1rem; border-radius: 99px; font-size: .8rem; font-weight: 500;
+  border: 1px solid var(--border-color); color: var(--text-secondary); background: white;
+  cursor: pointer; transition: all .2s;
+}
+.filterBtn:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+.filterActive { background: var(--brand-primary); color: white !important; border-color: var(--brand-primary) !important; }
+
+.mapGrid {
+  display: grid; grid-template-columns: 400px 1fr; gap: 1.5rem;
+  flex: 1; min-height: 0;
+}
+
+/* List Panel */
+.listCard { overflow-y: auto; display: flex; flex-direction: column; gap: 0; padding: 1rem; }
+.listMeta { font-size: .75rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--border-color); }
+
+.vetList { display: flex; flex-direction: column; gap: .75rem; }
+
+.vetItem {
+  padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);
+  cursor: pointer; transition: all .2s; background: white;
+}
+.vetItem:hover { border-color: var(--brand-primary); background: #F0FDFA; }
+.vetItemActive { border-color: var(--brand-primary); background: #F0FDFA; box-shadow: 0 0 0 2px #99F6E4; }
+
+.vetTop { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .6rem; }
+.vetName { font-size: .9rem; font-weight: 600; color: var(--text-primary); }
+.vetSpeciality { font-size: .72rem; color: var(--text-secondary); margin-top: .1rem; }
+
+.vetBadge { display: flex; align-items: center; gap: .25rem; padding: .2rem .6rem; border-radius: 99px; font-size: .7rem; font-weight: 600; }
+.badgeBlue   { background: #DBEAFE; color: #1E40AF; }
+.badgeGreen  { background: #D1FAE5; color: #065F46; }
+.badgeOrange { background: #FEF3C7; color: #92400E; }
+.distBadge   { font-size: .7rem; color: var(--brand-primary); font-weight: 600; }
+
+.vetDetails { display: flex; flex-direction: column; gap: .3rem; }
+.vetRow { display: flex; align-items: flex-start; gap: .4rem; font-size: .75rem; color: var(--text-secondary); line-height: 1.4; }
+
+.vetBtn {
+  display: flex; align-items: center; gap: .35rem; padding: .4rem .75rem;
+  border-radius: var(--radius-sm); font-size: .75rem; font-weight: 600;
+  border: 1px solid var(--border-color); color: var(--text-secondary);
+  background: white; transition: all .2s; text-decoration: none; cursor: pointer;
+}
+.vetBtn:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+.vetBtnPrimary { background: var(--brand-primary); color: white !important; border-color: var(--brand-primary) !important; }
+.vetBtnPrimary:hover { background: var(--brand-primary-hover); }
+
+/* Map */
+.mapWrapper { border-radius: var(--radius-lg); overflow: hidden; position: relative; z-index: 1; }
+.map { width: 100%; height: 100%; }
+
+.legend {
+  position: absolute; bottom: 1.5rem; left: 1.5rem; z-index: 999;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+  padding: .75rem 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  display: flex; flex-direction: column; gap: .4rem;
+}
+.legendItem { display: flex; align-items: center; gap: .5rem; font-size: .75rem; color: var(--text-primary); font-weight: 500; }
+.legendDot  { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .mapGrid { grid-template-columns: 1fr; height: auto; }
+  .container { height: auto; }
+  .mapWrapper { height: 400px; }
+}

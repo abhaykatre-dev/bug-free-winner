@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, FileImage, ShieldCheck, Activity, Eye, Mic, MicOff, Search, AlertTriangle, CheckCircle2, Volume2, WifiOff } from 'lucide-react';
+import { UploadCloud, FileImage, ShieldCheck, Activity, Eye, Mic, MicOff, Search, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 import styles from './Diagnostics.module.css';
 import { useLang, LANGUAGES } from '../../context/LangContext';

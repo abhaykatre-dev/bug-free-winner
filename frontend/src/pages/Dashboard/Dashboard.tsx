@@ -155,7 +155,7 @@ export const Dashboard: React.FC = () => {
   };
 
   // Auto-refresh every 30 s
-  const refreshRef = useRef<ReturnType<typeof setInterval>>();
+  const refreshRef = useRef<any>(null);
   useEffect(() => {
     refreshRef.current = setInterval(() => setRefreshK(k => k + 1), 30_000);
     return () => clearInterval(refreshRef.current);
@@ -443,7 +443,7 @@ export const Dashboard: React.FC = () => {
               )}
 
               {/* Medication */}
-              {selected.treatment?.medicines?.length > 0 && (
+              {selected.treatment?.medicines && selected.treatment.medicines.length > 0 && (
                 <div className={clsx('card', styles.journeySection)}>
                   <div className={styles.sectionHead}><Pill size={15}/> Prescribed Medication</div>
                   {selected.treatment.medicines.slice(0, 2).map((m: any, i: number) => (

@@ -136,7 +136,7 @@ export const Layout: React.FC = () => {
                   <div className={styles.settingLabel}>Backend API</div>
                   <div className={styles.settingDesc}>Flask inference server</div>
                 </div>
-                <span className={styles.settingBadge}>localhost:5001</span>
+                <span className={styles.settingBadge}>Connected</span>
               </div>
               <div className={styles.settingRow}>
                 <div>
@@ -260,7 +260,7 @@ export const Layout: React.FC = () => {
           </span>
           <span className="flex items-center gap-2">
             <span className={styles.dot} style={{ background: isOnline ? 'var(--brand-primary)' : 'var(--danger)' }}/>
-            {isOnline ? `API · localhost:5001` : t('Offline Mode')}
+            {isOnline ? `API · Connected` : t('Offline Mode')}
           </span>
           <span className="flex items-center gap-2">
             <Globe size={11}/> {currentLang.label}

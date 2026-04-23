@@ -43,7 +43,6 @@ const DICT: Record<LangCode, Record<string, string>> = {
     'Model accuracy':  'मॉडल सटीकता',
     'What To Do':      'क्या करें',
     'What NOT To Do':  'क्या न करें',
-    'Recovery Timeline':'पुनः प्राप्ति समय-सारणी',
     'Prescribed Medication': 'निर्धारित दवाएं',
     'Estimated Economic Impact': 'आर्थिक प्रभाव',
     // Result page
@@ -78,7 +77,6 @@ const DICT: Record<LangCode, Record<string, string>> = {
     'Disease Progression':     'रोग प्रगति',
     'Without Treatment':       'उपचार के बिना',
     'Stage':                   'चरण',
-    'Emergency Care Plan':     'आपातकालीन देखभाल योजना',
     'Fish Health Score':       'मछली स्वास्थ्य स्कोर',
     'All Good':                'सब ठीक है',
     'Your fish appear healthy':'आपकी मछली स्वस्थ दिखती है',
@@ -122,7 +120,7 @@ const DICT: Record<LangCode, Record<string, string>> = {
     'Online':                  'ऑनलाइन',
     'Limited Features':        'सीमित सुविधाएं',
     // Library
-    'Disease Library':         'रोग पुस्तकालय',
+    // Library
     'Search diseases':         'रोग खोजें',
     // Status
     'STABLE':   'स्थिर',

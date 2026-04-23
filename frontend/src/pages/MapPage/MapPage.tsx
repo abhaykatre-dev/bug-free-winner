@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { Navigation, Phone, Clock, ExternalLink, MapPin, Building2, Stethoscope, ShoppingBag } from 'lucide-react';
+import { Navigation, Phone, Clock, MapPin, Building2, Stethoscope, ShoppingBag } from 'lucide-react';
 import clsx from 'clsx';
 import styles from './MapPage.module.css';
 

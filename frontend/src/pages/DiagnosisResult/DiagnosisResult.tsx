@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
-  Share2, CheckCircle2, AlertCircle, Calendar, Thermometer,
-  Droplets, ArrowLeft, Volume2, VolumeX, MapPin, TrendingDown,
-  Activity, ChevronRight, Navigation, Phone, AlertTriangle, Pill,
+  Share2, CheckCircle2, AlertCircle,
+  ArrowLeft, Volume2, VolumeX, MapPin, TrendingDown,
+  Activity, ChevronRight, Phone, AlertTriangle, Pill,
   Leaf, ChevronDown, ChevronUp, Check, WifiOff,
 } from 'lucide-react';
 import clsx from 'clsx';

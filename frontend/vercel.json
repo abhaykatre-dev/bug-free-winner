@@ -5,9 +5,9 @@
   "installCommand": "npm install",
   "framework": "vite",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "VITE_FLASK_API_URL": "@vite_flask_api_url"
-  }
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }

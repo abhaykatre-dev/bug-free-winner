@@ -83,7 +83,7 @@ def send_telegram_report(*, chat_id: str, detection_id: str) -> bool:
             )
 
         message = (
-            f"🐟 AquaGuard AI Diagnosis Report\n"
+            f"🐟 AquaDetect AI Diagnosis Report\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
             f"🦠 Disease: {row['primary_disease']}\n"
             f"📊 Confidence: {confidence_pct}% | Severity: {sev_emoji} {row['severity']}\n"

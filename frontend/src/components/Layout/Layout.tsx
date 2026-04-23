@@ -169,7 +169,7 @@ export const Layout: React.FC = () => {
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className={styles.header}>
         <NavLink to="/" className={styles.logo}>
-          <img src="/logo.png" alt="AquaGuard AI" className={styles.logoImg}/>
+          <img src="/logo.png" alt="AquaDetect AI" className={styles.logoImg}/>
         </NavLink>
 
         <nav className={styles.nav}>
@@ -266,7 +266,7 @@ export const Layout: React.FC = () => {
             <Globe size={11}/> {currentLang.label}
           </span>
         </div>
-        <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>AquaGuard AI © 2026 · Nagpur</div>
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>AquaDetect AI © 2026 · Nagpur</div>
       </footer>
     </div>
   );

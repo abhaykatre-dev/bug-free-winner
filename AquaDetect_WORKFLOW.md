@@ -1,5 +1,5 @@
 # 🔄 System Workflow Documentation
-## AquaGuard XAI — Complete End-to-End Flows
+## AquaDetect XAI — Complete End-to-End Flows
 **Version:** 1.0 | April 2025
 
 ---
@@ -442,12 +442,12 @@ Count critical detections = N
 
 ### Setup (One-time)
 ```
-1. Farmer opens @AquaGuardBot in Telegram
+1. Farmer opens @AquaDetectBot in Telegram
 2. Sends /start
 3. Bot replies: "Send /link to get your link code"
 4. Farmer sends /link
 5. Bot replies: "Your code: 7X4K2P (valid 10 min)"
-6. Farmer opens AquaGuard app → Settings → Link Telegram
+6. Farmer opens AquaDetect app → Settings → Link Telegram
 7. Enters code → app POSTs to Flask /telegram/link
 8. Flask maps code → uid → saves chatId to Firestore
 9. Farmer confirmed: "Telegram linked ✅"
@@ -664,4 +664,4 @@ DEPLOY
 
 ---
 
-*AquaGuard XAI Workflow Documentation | Version 1.0 | April 2025*
+*AquaDetect XAI Workflow Documentation | Version 1.0 | April 2025*

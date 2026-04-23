@@ -32,7 +32,7 @@
 
 ## 1. Executive Summary
 
-**AquaGuard AI** is an open-source, explainable artificial intelligence system designed to revolutionize fish disease detection and aquaculture management in India and developing markets. Unlike conventional disease detection apps that merely output a label, AquaGuard AI delivers a full diagnostic intelligence pipeline: it identifies diseases from fish images with visual explanations, predicts economic losses, generates day-wise treatment timelines, assesses pond-wide outbreak risk, and connects farmers to local veterinary resources — all in regional Indian languages, with offline capability.
+**AquaDetect AI** is an open-source, explainable artificial intelligence system designed to revolutionize fish disease detection and aquaculture management in India and developing markets. Unlike conventional disease detection apps that merely output a label, AquaDetect AI delivers a full diagnostic intelligence pipeline: it identifies diseases from fish images with visual explanations, predicts economic losses, generates day-wise treatment timelines, assesses pond-wide outbreak risk, and connects farmers to local veterinary resources — all in regional Indian languages, with offline capability.
 
 The system is architected on a React (Vite) frontend and Python Flask backend, leverages MobileNetV2/YOLOv8 for inference, and integrates Telegram, Leaflet.js maps, Web Speech API, and free translation APIs. It is fully operable on commodity hardware and free-tier cloud infrastructure, making it genuinely deployable for rural aquaculture communities.
 
@@ -68,7 +68,7 @@ Current tools such as basic image classifiers or government SMS advisories:
 - Require constant internet access
 - Give no pond-level risk aggregation or outbreak forecasting
 
-**AquaGuard AI addresses every one of these gaps.**
+**AquaDetect AI addresses every one of these gaps.**
 
 ### 2.4 Opportunity
 
@@ -647,7 +647,7 @@ heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
 ### 11.2 Navigation Structure
 
 ```
-AquaGuard AI
+AquaDetect AI
 ├── Home (Quick Diagnose)
 │   ├── Camera/Upload
 │   └── Recent Diagnoses Feed
@@ -1017,7 +1017,7 @@ POST https://api.telegram.org/bot{BOT_TOKEN}/setWebhook
 
 **Report Message Format:**
 ```
-🐟 AquaGuard AI Diagnosis Report
+🐟 AquaDetect AI Diagnosis Report
 ━━━━━━━━━━━━━━━━━━━
 🦠 Disease: Ich (White Spot Disease)
 📊 Confidence: 87% | Severity: ⚠️ Moderate
@@ -1082,7 +1082,7 @@ window.speechSynthesis.speak(utter);
 
 ```javascript
 // Load model (cached in IndexedDB after first load)
-const model = await tf.loadLayersModel('indexeddb://aquaguard-mobilenetv2');
+const model = await tf.loadLayersModel('indexeddb://aquadetect-mobilenetv2');
 
 // Inference
 const imgTensor = tf.browser.fromPixels(imgElement)
@@ -1134,7 +1134,7 @@ const top1 = preds.argMax(-1).dataSync()[0];
 
 9. **No Real-Time Water Quality Input:** The system does not integrate with IoT sensors; environmental context is inferred from user input or defaults, not live sensor data.
 
-10. **Not a Medical Device:** AquaGuard AI is a decision-support tool. It is not a substitute for professional aquaculture veterinary diagnosis. This is stated prominently in the UI and all generated reports.
+10. **Not a Medical Device:** AquaDetect AI is a decision-support tool. It is not a substitute for professional aquaculture veterinary diagnosis. This is stated prominently in the UI and all generated reports.
 
 ---
 
@@ -1217,7 +1217,7 @@ const top1 = preds.argMax(-1).dataSync()[0];
 > Show a 30-second real clip of fish disease outbreak footage. State: "Indian fish farmers lose ₹8,000 crore annually to preventable diseases. Current tools give a disease name. That's not enough."
 
 **Minute 1–2: Upload & Instant Diagnosis**
-1. Open AquaGuard AI on mobile screen (mirrored).
+1. Open AquaDetect AI on mobile screen (mirrored).
 2. Tap "Diagnose Now" → upload a pre-staged fish photo showing Ich.
 3. Wait 2.5 seconds → Diagnosis Card appears: *"Ich (White Spot Disease) — 87% confident — Moderate Severity"*
 4. Point to Trust Meter: *"We don't just give an answer — we tell you how sure we are."*
@@ -1246,7 +1246,7 @@ const top1 = preds.argMax(-1).dataSync()[0];
 1. Toggle phone to Airplane Mode.
 2. Upload a new fish photo — diagnosis still works in <5s.
 3. Show "Offline Mode" banner + queued sync indicator.
-4. Closing line: *"AquaGuard AI is not a chatbot. It's not a label printer. It's a complete aquaculture intelligence partner — explainable, affordable, offline-ready, and built for India."*
+4. Closing line: *"AquaDetect AI is not a chatbot. It's not a label printer. It's a complete aquaculture intelligence partner — explainable, affordable, offline-ready, and built for India."*
 
 ### 19.2 Fallback Plan
 
@@ -1291,7 +1291,7 @@ Pre-stage the following for the demo:
 ## Appendix B: Project File Structure
 
 ```
-aquaguard-ai/
+aquadetect-ai/
 ├── frontend/                    # React Vite Application
 │   ├── src/
 │   │   ├── components/
@@ -1369,6 +1369,6 @@ aquaguard-ai/
 
 ---
 
-*Document End — AquaGuard AI PRD v1.0.0*  
+*Document End — AquaDetect AI PRD v1.0.0*  
 *Prepared for Hackathon Submission | All tools and APIs referenced are free and open-source*  
 *"Smarter fish farming starts with explainable AI."* 🐟

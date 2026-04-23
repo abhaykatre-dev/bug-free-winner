@@ -1,5 +1,5 @@
 # 🎨 Design Specification
-## AquaGuard XAI — UI/UX Design System
+## AquaDetect XAI — UI/UX Design System
 **Version:** 1.0 | April 2025
 
 ---
@@ -248,7 +248,7 @@
 
 ```
 ┌─────────────────────────────┐
-│       🐟  AquaGuard XAI     │  ← Syne 800 gradient text
+│       🐟  AquaDetect XAI     │  ← Syne 800 gradient text
 │   AI Aquaculture Assistant  │  ← DM Sans muted
 │                             │
 │  [🌐 Language Selector]     │  ← Pill buttons: EN हिं తె বাং ଓ
@@ -273,7 +273,7 @@
 
 ```
 ┌─────────────────────────────┐
-│ 🐟 AquaGuard  [🌐] [🔔]    │  ← Header: brand + icons
+│ 🐟 AquaDetect  [🌐] [🔔]    │  ← Header: brand + icons
 │─────────────────────────────│
 │ Good morning, Raju 👋        │
 │ Your Farm · Nellore, AP     │
@@ -653,4 +653,4 @@ Using emoji icons ensures zero external dependency and works in all browsers inc
 
 ---
 
-*Design System Owner: AquaGuard Team | Version 1.0 | April 2025*
+*Design System Owner: AquaDetect Team | Version 1.0 | April 2025*

@@ -1,13 +1,13 @@
-# AquaGuard AI — Project Documentation
+# AquaDetect AI — Project Documentation
 
 > **Version**: 2.0 · **Status**: Production-Ready Hackathon Build  
-> **Team**: AquaGuard AI · **Event**: National Innovation Hackathon 2026
+> **Team**: AquaDetect AI · **Event**: National Innovation Hackathon 2026
 
 ---
 
 ## Overview
 
-AquaGuard AI is an **AI-powered aquaculture disease decision-support platform** built to help Indian freshwater fish farmers detect diseases, take evidence-based treatment decisions, and predict outbreak risks — even in low-connectivity rural environments.
+AquaDetect AI is an **AI-powered aquaculture disease decision-support platform** built to help Indian freshwater fish farmers detect diseases, take evidence-based treatment decisions, and predict outbreak risks — even in low-connectivity rural environments.
 
 The platform combines a **MobileNetV2 deep learning model**, a **rule-based outbreak engine**, **multilingual support**, and a **progressive offline mode** into a clean, mobile-aware web interface.
 
@@ -186,9 +186,9 @@ The core intelligence screen. Sections:
 ### What works offline
 | Feature | Offline Behaviour |
 |---------|------------------|
-| Image Upload | Queued to `aquaguard_offline_queue` |
+| Image Upload | Queued to `aquadetect_offline_queue` |
 | Preliminary Result | Shown immediately with amber banner |
-| Past Results | Served from `aquaguard_result_cache` (last 20) |
+| Past Results | Served from `aquadetect_result_cache` (last 20) |
 | Dashboard History | Falls back to cache |
 | Approved Plans | Always available (pure localStorage) |
 | Voice Symptom Check | Works fully (no network needed) |
@@ -203,7 +203,7 @@ The core intelligence screen. Sections:
 | Translation API | Requires internet (local dictionary still works) |
 
 ### Auto-Sync Flow
-1. Scan offline → saved to `aquaguard_offline_queue` with base64 image
+1. Scan offline → saved to `aquadetect_offline_queue` with base64 image
 2. `useOfflineSync` hook listens for `window.online` event
 3. On reconnect → iterates queue → POSTs each to `/api/diagnose`
 4. Caches real results → removes from queue

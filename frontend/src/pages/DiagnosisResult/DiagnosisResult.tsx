@@ -149,7 +149,7 @@ export const DiagnosisResult: React.FC = () => {
   // Alert
   const handleAlert = async (type: 'sms' | 'telegram') => {
     setAlertStatus('Sending…');
-    const msg = `AquaGuard Report\nDisease: ${topPrediction.disease}\nSeverity: ${severity}\nConfidence: ${(topPrediction.confidence * 100).toFixed(1)}%\nEst. Loss: Rs.${estimatedLoss.toLocaleString()}\nNearest Vet: ${nearestVet.name} ${nearestVet.phone}`;
+    const msg = `AquaDetect Report\nDisease: ${topPrediction.disease}\nSeverity: ${severity}\nConfidence: ${(topPrediction.confidence * 100).toFixed(1)}%\nEst. Loss: Rs.${estimatedLoss.toLocaleString()}\nNearest Vet: ${nearestVet.name} ${nearestVet.phone}`;
     try {
       const payload = type === 'sms' ? { phone, message: msg } : { chat_id: chatId, message: msg };
       const res     = await fetch(`${API_URL}/alert/${type}`, {
@@ -183,6 +183,9 @@ export const DiagnosisResult: React.FC = () => {
             <div className={styles.modalSection}>
               <label className={styles.modalLabel}>Telegram Chat ID</label>
               <input className={styles.modalInput} value={chatId} onChange={e => setChatId(e.target.value)} placeholder="1833628886"/>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem', marginBottom: '0.5rem', lineHeight: 1.4 }}>
+                Don't know your Chat ID? <a href={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'AquaDetectBot'}`} target="_blank" rel="noreferrer" style={{ color: 'var(--brand-primary)', textDecoration: 'underline' }}>Open our Telegram Bot</a> and type <b>/myid</b>.
+              </div>
               <button className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} onClick={() => handleAlert('telegram')}>Send via Telegram</button>
             </div>
             {alertStatus && (

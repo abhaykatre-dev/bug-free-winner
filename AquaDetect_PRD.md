@@ -1,6 +1,6 @@
 # 📋 Product Requirements Document
 ## Explainable AI-Based Fish Disease Detection & Aquaculture Intelligence System
-### "AquaGuard XAI"
+### "AquaDetect XAI"
 
 ---
 
@@ -8,7 +8,7 @@
 **Date:** April 2025  
 **Type:** Hackathon Submission — Problem Statement #2  
 **Dataset:** 2,444 images | 7 Disease Classes | Train: 1,750 | Test: 700  
-**Team:** AquaGuard  
+**Team:** AquaDetect  
 **Status:** Ready for Development
 
 ---
@@ -39,11 +39,11 @@
 
 ## 1. EXECUTIVE SUMMARY
 
-AquaGuard XAI is a next-generation aquaculture intelligence platform that transforms basic fish disease detection into a complete, explainable, and actionable disease management ecosystem. Unlike simple classification apps, AquaGuard XAI provides AI transparency through visual heatmaps, generates day-wise treatment timelines, predicts economic losses before they occur, and delivers intelligent outbreak alerts — all accessible to rural Indian farmers via a multilingual voice-enabled mobile interface.
+AquaDetect XAI is a next-generation aquaculture intelligence platform that transforms basic fish disease detection into a complete, explainable, and actionable disease management ecosystem. Unlike simple classification apps, AquaDetect XAI provides AI transparency through visual heatmaps, generates day-wise treatment timelines, predicts economic losses before they occur, and delivers intelligent outbreak alerts — all accessible to rural Indian farmers via a multilingual voice-enabled mobile interface.
 
 The system is trained on a 2,444-image dataset covering 7 freshwater fish disease classes specific to South Asian aquaculture (tilapia, carp, catfish). It combines MobileNetV2 for fast mobile inference with Grad-CAM explainability, Flask REST APIs, Firebase Firestore for persistence, and deep integrations with Telegram, Leaflet.js maps, and Web Speech API.
 
-**Why AquaGuard XAI wins a hackathon:**
+**Why AquaDetect XAI wins a hackathon:**
 
 - It solves a real, high-impact problem affecting millions of Indian farmers
 - It goes 10x deeper than any existing tool: XAI + economic prediction + action timeline + outbreak forecast
@@ -64,7 +64,7 @@ Freshwater aquaculture supports over 14 million farmers in India, generating ₹
 
 ### 2.2 Specific Gaps
 
-| Gap | Current Reality | AquaGuard XAI Solution |
+| Gap | Current Reality | AquaDetect XAI Solution |
 |---|---|---|
 | No visual explanation | Black-box AI results | Grad-CAM heatmap shows infected region |
 | No financial context | Farmers don't know cost of inaction | Economic Loss Predictor |
@@ -646,7 +646,7 @@ python quantize.py --model model.onnx --output model_int8.onnx
 
 ## 12. API DESIGN
 
-### Base URL: `https://api.aquaguard.in/api/v1`
+### Base URL: `https://api.aquadetect.in/api/v1`
 
 All endpoints require: `Authorization: Bearer <firebase_id_token>`
 
@@ -929,11 +929,11 @@ CREATE TABLE ponds (
 **Setup:**
 1. Create bot via @BotFather → get `BOT_TOKEN`
 2. Farmer sends `/start` in Telegram → bot replies with 6-digit link code
-3. Farmer enters code in AquaGuard app → links `telegramChatId` to Firestore profile
+3. Farmer enters code in AquaDetect app → links `telegramChatId` to Firestore profile
 
 **Report Message Format:**
 ```
-🐟 AquaGuard XAI — Disease Report
+🐟 AquaDetect XAI — Disease Report
 ━━━━━━━━━━━━━━━━━━━━
 🔴 Disease: Bacterial Red Disease
 📊 Confidence: 94% | Severity: HIGH
@@ -943,7 +943,7 @@ CREATE TABLE ponds (
 ━━━━━━━━━━━━━━━━━━━━
 ⚠️ ISOLATE POND — High outbreak risk
 📍 Nearest Vet: Dr. Ramesh, 4.2 km away
-🔗 Full Report: https://aquaguard.in/report/det_abc123
+🔗 Full Report: https://aquadetect.in/report/det_abc123
 ```
 
 **Library:** `python-telegram-bot` (free, no paid tier)
@@ -1097,4 +1097,4 @@ translated = response.json()["translatedText"]
 
 ---
 
-*Document Owner: AquaGuard Team | Version 2.0 | April 2025 | Hackathon Ready*
+*Document Owner: AquaDetect Team | Version 2.0 | April 2025 | Hackathon Ready*

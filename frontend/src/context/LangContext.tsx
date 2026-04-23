@@ -207,11 +207,11 @@ const LangContext = createContext<LangContextType>({
 
 export const LangProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLangState] = useState<LangCode>(
-    () => (localStorage.getItem('aquaguard_lang') as LangCode) || 'en'
+    () => (localStorage.getItem('aquadetect_lang') as LangCode) || 'en'
   );
   const setLang = (l: LangCode) => {
     setLangState(l);
-    localStorage.setItem('aquaguard_lang', l);
+    localStorage.setItem('aquadetect_lang', l);
   };
   // Translation function — falls back to key if not found
   const t = (key: string): string => {

@@ -39,13 +39,24 @@ def telegram_webhook():
         send_telegram_alert(
             chat_id=chat_id,
             message=(
-                "🐟 Welcome to AquaGuard AI!\n\n"
+                "🐟 Welcome to AquaDetect AI!\n\n"
+                f"Your Chat ID is: {chat_id}\n\n"
+                "Copy this Chat ID and paste it in the AquaDetect app to receive alerts here.\n\n"
                 "Available commands:\n"
                 "/report — Get your latest diagnosis report\n"
                 "/pondstatus — View pond risk summary\n"
                 "/alert — Check outbreak alerts in your area\n"
                 "/help — Show this message\n\n"
-                "Upload a fish photo via the AquaGuard app to run a diagnosis."
+                "Upload a fish photo via the AquaDetect app to run a diagnosis."
+            ),
+        )
+
+    elif text.startswith("/myid") or text.startswith("/chatid"):
+        send_telegram_alert(
+            chat_id=chat_id,
+            message=(
+                f"Your Chat ID is: {chat_id}\n\n"
+                "Copy this Chat ID and paste it in the AquaDetect app to receive alerts."
             ),
         )
 
@@ -64,7 +75,7 @@ def telegram_webhook():
         else:
             send_telegram_alert(
                 chat_id=chat_id,
-                message="No diagnoses found yet. Upload a fish photo via the AquaGuard app first."
+                message="No diagnoses found yet. Upload a fish photo via the AquaDetect app first."
             )
 
     elif text.startswith("/pondstatus"):
@@ -83,7 +94,7 @@ def telegram_webhook():
                 lines.append(f"{e} {r['name']}: {r['risk_level']} (score: {r['risk_score']})")
             send_telegram_alert(chat_id=chat_id, message="\n".join(lines))
         else:
-            send_telegram_alert(chat_id=chat_id, message="No ponds registered yet. Register ponds via the AquaGuard app.")
+            send_telegram_alert(chat_id=chat_id, message="No ponds registered yet. Register ponds via the AquaDetect app.")
 
     elif text.startswith("/alert"):
         conn = get_conn()
@@ -106,7 +117,7 @@ def telegram_webhook():
         send_telegram_alert(
             chat_id=chat_id,
             message=(
-                "🐟 AquaGuard AI Commands:\n"
+                "🐟 AquaDetect AI Commands:\n"
                 "/report — Latest diagnosis report\n"
                 "/pondstatus — Pond risk summary\n"
                 "/alert — Outbreak alerts\n"

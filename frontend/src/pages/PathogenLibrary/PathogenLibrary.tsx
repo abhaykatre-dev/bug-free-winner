@@ -114,7 +114,7 @@ export const PathogenLibrary: React.FC = () => {
         <div>
           <h1 className={styles.title}>Pathogen Library</h1>
           <p className={styles.subtitle}>
-            Complete diagnostic reference for all 7 freshwater fish disease classes in the AquaGuard training dataset.
+            Complete diagnostic reference for all 7 freshwater fish disease classes in the AquaDetect training dataset.
           </p>
         </div>
         <div className={styles.searchBox}>

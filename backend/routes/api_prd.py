@@ -762,7 +762,7 @@ def alert_sms():
     if not phone or not message:
         return _error(ApiError(code="INVALID_REQUEST", message="Phone and message are required", http_status=400))
 
-    from services.sms import send_sms_alert, get_sms_error
+    from services.sms import send_sms_alert
     success, error_msg = send_sms_alert(phone, message)
 
     if success:

@@ -6,8 +6,8 @@
  */
 import { useEffect, useRef } from 'react';
 
-const QUEUE_KEY  = 'aquaguard_offline_queue';
-const CACHE_KEY  = 'aquaguard_result_cache';
+const QUEUE_KEY  = 'aquadetect_offline_queue';
+const CACHE_KEY  = 'aquadetect_result_cache';
 const API_URL    = import.meta.env.VITE_FLASK_API_URL || 'http://localhost:5001/api';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ export const getAllCachedResults = (): CachedResult[] => {
 };
 
 // ── Approved Plans ────────────────────────────────────────────────────────────
-const APPROVED_KEY = 'aquaguard_approved_plans';
+const APPROVED_KEY = 'aquadetect_approved_plans';
 
 export interface ApprovedPlan {
   diagnosisId: string;

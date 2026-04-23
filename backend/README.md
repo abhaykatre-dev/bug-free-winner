@@ -1,6 +1,6 @@
-## AquaGuard Backend (Flask)
+## AquaDetect Backend (Flask)
 
-This folder contains the backend API described in `bug-free-winner/AquaGuard_PRD.md`.
+This folder contains the backend API described in `bug-free-winner/AquaDetect_PRD.md`.
 
 ### Quickstart (local)
 

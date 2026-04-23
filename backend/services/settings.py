@@ -30,7 +30,7 @@ class Settings:
             mobilenet_labels_path=_empty_to_none(os.environ.get("MOBILENET_LABELS_PATH")),
             telegram_bot_token=_empty_to_none(os.environ.get("TELEGRAM_BOT_TOKEN")),
             libretranslate_url=_empty_to_none(os.environ.get("LIBRETRANSLATE_URL")),
-            sqlite_path=os.environ.get("SQLITE_PATH") or "./db/aquaguard.sqlite3",
+            sqlite_path=os.environ.get("SQLITE_PATH") or "./db/aquadetect.sqlite3",
             cors_origins=_split_csv(os.environ.get("CORS_ORIGINS") or ""),
             log_level=(os.environ.get("LOG_LEVEL") or "INFO").strip().upper(),
         )

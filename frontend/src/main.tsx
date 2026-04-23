@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ width: 40, height: 40, border: '3px solid #CCFBF1', borderTopColor: 'var(--brand-primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1rem' }}/>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Loading AquaGuard…</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Loading AquaDetect…</div>
         </div>
       </div>
     );

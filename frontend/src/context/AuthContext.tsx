@@ -31,7 +31,7 @@ function firebaseUserToUser(fbUser: FirebaseUser, role = 'Aqua Farmer'): User {
     id: fbUser.uid,
     name: fbUser.displayName || fbUser.email?.split('@')[0] || 'User',
     email: fbUser.email || '',
-    role: localStorage.getItem('aquaguard_role') || role,
+    role: localStorage.getItem('aquadetect_role') || role,
     photoURL: fbUser.photoURL,
   };
 }
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(firebaseUserToUser(fbUser));
       } else {
         // Fall back to dev session
-        const stored = localStorage.getItem('aquaguard_user');
+        const stored = localStorage.getItem('aquadetect_user');
         setUser(stored ? JSON.parse(stored) : null);
       }
       setLoading(false);
@@ -68,20 +68,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const registerWithEmail = async (name: string, email: string, password: string, role: string) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(result.user, { displayName: name });
-    localStorage.setItem('aquaguard_role', role);
+    localStorage.setItem('aquadetect_role', role);
     setUser(firebaseUserToUser(result.user, role));
   };
 
   const loginDev = (name: string, role: string) => {
     const u: User = { id: 'dev_' + Date.now(), name, email: '', role, photoURL: null };
     setUser(u);
-    localStorage.setItem('aquaguard_user', JSON.stringify(u));
+    localStorage.setItem('aquadetect_user', JSON.stringify(u));
   };
 
   const logout = async () => {
     await signOut(auth).catch(() => {});
-    localStorage.removeItem('aquaguard_user');
-    localStorage.removeItem('aquaguard_role');
+    localStorage.removeItem('aquadetect_user');
+    localStorage.removeItem('aquadetect_role');
     setUser(null);
   };
 

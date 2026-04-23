@@ -161,7 +161,7 @@ export const Diagnostics: React.FC = () => {
         <div>
           <h1 className={styles.title}>Scan & Detect</h1>
           <p className={styles.subtitle}>
-            Upload or pick a sample fish image below. AquaGuard AI will detect diseases, generate a Grad-CAM heatmap, and recommend treatment in seconds.
+            Upload or pick a sample fish image below. AquaDetect AI will detect diseases, generate a Grad-CAM heatmap, and recommend treatment in seconds.
           </p>
         </div>
         <div className="flex gap-2">
@@ -239,7 +239,7 @@ export const Diagnostics: React.FC = () => {
               {isUploading && (
                 <div className={styles.analyzingBanner}>
                   <span className={styles.spinner} />
-                  AquaGuard AI is processing your image… generating Grad-CAM heatmap
+                  AquaDetect AI is processing your image… generating Grad-CAM heatmap
                 </div>
               )}
             </div>
@@ -281,7 +281,7 @@ export const Diagnostics: React.FC = () => {
           <div className={styles.systemStatusBadge}>
             <div className="flex items-center gap-2" style={{ fontWeight: 700, color: 'var(--brand-primary)', marginBottom: '0.25rem', fontSize: '0.85rem' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#67E8F9', animation: 'blink 1.5s infinite' }} />
-              AquaGuard AI Online
+              AquaDetect AI Online
             </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
               MobileNetV2 · Nagpur Dataset · Latency &lt;2s

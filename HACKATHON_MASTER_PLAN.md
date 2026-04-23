@@ -1,5 +1,5 @@
 # 🏆 HACKATHON MASTER PLAN
-## AquaGuard XAI — Freshwater Fish Disease Ecosystem
+## AquaDetect XAI — Freshwater Fish Disease Ecosystem
 ### "From Detection to Ecosystem: Saving India's Aquaculture at Scale"
 
 **Version:** 3.0 — FINAL HACKATHON STRATEGY  
@@ -19,7 +19,7 @@ Most teams will submit: `Image → AI → Disease label`. That is a demo, not a 
 
 ### What Separates Us
 
-| Dimension | Others | AquaGuard XAI |
+| Dimension | Others | AquaDetect XAI |
 |---|---|---|
 | Core AI | Image classifier | Classifier + Grad-CAM XAI + Confidence Trust Meter |
 | Output | Disease name | Disease + severity + economic loss + day-wise treatment plan |
@@ -92,10 +92,10 @@ ACCESS          → Voice-first UI (speak in Telugu, Hindi, Bengali)
 - Auth, CORS, rate limiting, error handling — all done
 
 ### ✅ Planning Docs (DONE — Do NOT Rewrite)
-- `AquaGuard_PRD.md` — full product requirements
-- `AquaGuard_DESIGN.md` — UI/UX system (biopunk aesthetic)
-- `AquaGuard_SKILLS.md` — code references, hooks, components
-- `AquaGuard_WORKFLOW.md` — all end-to-end flows
+- `AquaDetect_PRD.md` — full product requirements
+- `AquaDetect_DESIGN.md` — UI/UX system (biopunk aesthetic)
+- `AquaDetect_SKILLS.md` — code references, hooks, components
+- `AquaDetect_WORKFLOW.md` — all end-to-end flows
 
 ---
 
@@ -173,7 +173,7 @@ File: `backend/data/disease_info.py` — verify all 7 classes have complete data
 - Urgency: healthy / monitor / treat / isolate
 
 #### 1.5 Build the Frontend (React Vite PWA)
-See `AquaGuard_SKILLS.md` for complete component tree. Priority screens for demo:
+See `AquaDetect_SKILLS.md` for complete component tree. Priority screens for demo:
 1. **Login screen** — Phone OTP or Google OAuth (Firebase)
 2. **Scan screen** — Camera capture + file upload + pond selector
 3. **XAI Report screen** — The money shot (heatmap + disease + urgency + trust meter)
@@ -259,7 +259,7 @@ One-tap report delivery — the "rural accessibility" feature judges love:
 **Goal: Demo-ready, zero errors, visually stunning.**
 
 #### 3.1 Design System Implementation
-Follow `AquaGuard_DESIGN.md` biopunk aesthetic:
+Follow `AquaDetect_DESIGN.md` biopunk aesthetic:
 - Colors: Deep-water dark (#030F0B), electric cyan (#00A3E0), bio-green (#00C896)
 - Typography: Inter / Outfit from Google Fonts
 - Glassmorphism cards with backdrop-filter blur
@@ -305,7 +305,7 @@ Follow `AquaGuard_DESIGN.md` biopunk aesthetic:
 > We built that tool."
 
 **Minute 2 — Core Demo (Live scan)**
-1. Open AquaGuard on mobile
+1. Open AquaDetect on mobile
 2. Point camera at infected fish image (pre-prepared demo photo)
 3. Tap Scan — show loading animation
 4. **BOOM** — Result appears:
@@ -441,7 +441,7 @@ Should return: disease, confidence, heatmap_image_b64, economic_loss, action_tim
 ### Day 2 Tasks (Differentiators + Polish)
 
 **Task 6: Telegram Bot** (1 hour)
-- Create @AquaGuardBot via @BotFather (free)
+- Create @AquaDetectBot via @BotFather (free)
 - Wire `services/telegram.py` to send formatted report
 
 **Task 7: Voice UI** (1 hour)
@@ -453,7 +453,7 @@ Should return: disease, confidence, heatmap_image_b64, economic_loss, action_tim
 - Outbreak alert cards
 
 **Task 9: Visual Polish** (2 hours)
-- Apply biopunk design system from `AquaGuard_DESIGN.md`
+- Apply biopunk design system from `AquaDetect_DESIGN.md`
 - Animated urgency banners, glassmorphism cards, confidence gauges
 
 **Task 10: Demo Preparation** (2 hours)
@@ -562,6 +562,6 @@ We already have:
 
 ---
 
-*AquaGuard XAI — Hackathon Master Plan | Version 3.0 | April 2026*  
+*AquaDetect XAI — Hackathon Master Plan | Version 3.0 | April 2026*  
 *Team: keshav nabira | Email: keshavnabira.cse23@sbjit.edu.in*  
 *"Every hour of detection delay costs ₹187. We end that."*

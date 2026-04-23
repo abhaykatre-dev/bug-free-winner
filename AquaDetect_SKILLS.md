@@ -1,5 +1,5 @@
 # 🛠️ Frontend Skills & Developer Reference
-## AquaGuard XAI — React + Flask + Firebase
+## AquaDetect XAI — React + Flask + Firebase
 **Version:** 1.0 | April 2025
 
 ---
@@ -7,7 +7,7 @@
 ## 1. PROJECT STRUCTURE
 
 ```
-aquaguard-xai/
+aquadetect-xai/
 │
 ├── frontend/                          # React (Vite) PWA
 │   ├── public/
@@ -241,7 +241,7 @@ export function useAuth() {
 // src/services/api.ts
 import { auth } from "../firebase";
 
-const API = import.meta.env.VITE_FLASK_API_URL;  // e.g. https://api.aquaguard.in/api/v1
+const API = import.meta.env.VITE_FLASK_API_URL;  // e.g. https://api.aquadetect.in/api/v1
 
 async function authHeaders() {
   const token = await auth.currentUser?.getIdToken();
@@ -548,7 +548,7 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 
 app = Flask(__name__)
-CORS(app, origins=["https://aquaguard.in", "http://localhost:5173"])
+CORS(app, origins=["https://aquadetect.in", "http://localhost:5173"])
 
 app.register_blueprint(detect_bp,     url_prefix="/api/v1")
 app.register_blueprint(explain_bp,    url_prefix="/api/v1")
@@ -712,7 +712,7 @@ async def send_report(chat_id: str, detection: dict):
     icon = urgency_icons.get(detection["urgency"], "⚠️")
 
     text = f"""
-🐟 *AquaGuard XAI — Disease Report*
+🐟 *AquaDetect XAI — Disease Report*
 ━━━━━━━━━━━━━━━━━━━━
 {icon} *Disease:* {detection['disease']}
 📊 *Confidence:* {round(detection['confidence']*100)}% | *Severity:* {detection['severity']}
@@ -720,7 +720,7 @@ async def send_report(chat_id: str, detection: dict):
 💰 *Loss if delayed 3 days:* ₹{loss.get('lossIfDelayed3Days', 'N/A'):,}
 ━━━━━━━━━━━━━━━━━━━━
 📋 *Reasoning:* {detection['reasoning']}
-🔗 Full report: https://aquaguard.in/report/{detection['detectionId']}
+🔗 Full report: https://aquadetect.in/report/{detection['detectionId']}
     """.strip()
 
     await bot.send_message(chat_id=chat_id, text=text, parse_mode="Markdown")
@@ -735,7 +735,7 @@ def send_report_sync(chat_id: str, detection: dict):
 
 ```javascript
 // public/sw.js
-const CACHE_NAME = "aquaguard-v1";
+const CACHE_NAME = "aquadetect-v1";
 const OFFLINE_ASSETS = [
   "/", "/index.html", "/manifest.json",
   "/model/model_int8.onnx",
@@ -858,4 +858,4 @@ ONNX_PATH=./models/model.onnx
 
 ---
 
-*AquaGuard XAI Frontend & Backend Skills Reference | Version 1.0 | April 2025*
+*AquaDetect XAI Frontend & Backend Skills Reference | Version 1.0 | April 2025*

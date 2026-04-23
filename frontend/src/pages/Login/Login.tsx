@@ -73,7 +73,7 @@ export const Login: React.FC = () => {
         <div className={styles.brand}>
           <div className={styles.brandIcon}><Fish size={28} color="white"/></div>
           <div>
-            <h1 className={styles.brandName}>AquaGuard <span>AI</span></h1>
+            <h1 className={styles.brandName}>AquaDetect <span>AI</span></h1>
             <p className={styles.brandTagline}>AI-Powered Fish Disease Detection</p>
           </div>
         </div>
